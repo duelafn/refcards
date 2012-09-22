@@ -1,0 +1,938 @@
+% VERSION = 0.0000;# Created: 2009-10-29
+% Release quality: Incomplete
+\documentclass{article}
+\usepackage{fontspec}
+\usepackage[centering,width=10in,height=7.5in]{geometry}
+\usepackage{parskip}
+\parskip 0pt
+\geometry{landscape}
+\usepackage{array,amsfonts,amsmath,amssymb,graphicx}
+\usepackage{multicol,xcolor,shortvrb,fancyvrb,xspace}
+\setlength{\columnsep}{4em}
+\let\epsilon\varepsilon\let\phi\varphi
+\usepackage{syntax} %% http://tug.ctan.org/pkg/syntax-mdw
+\usepackage{xifthen}
+\newcolumntype{L}{>{\lit*\bgroup}l<{\egroup}}
+
+% COMMANDS:
+%----------
+% _  |           underscore, verticalbar
+% "#1"           a ShortVerb
+% \lr#1#2        left-right line
+% <#1>           for meta-syntax
+% \sl#1          for meta-syntax
+% \opt#1         for optional parameters
+% code           fancyvrb environment allowing \commands
+% \columnbreak   for breaking columns
+% \", \^         literal ", ^
+% \bs            \textbackslash
+\makeatletter
+\syn@shorts\relax\relax
+\addspecial\|\catcode`\|\active
+% \addspecial\"\catcode`\"\active%% can use commands in "..."
+\shortverb{"}%% may not use commands in "..."
+\def\opt#1{\textcolor[gray]{.5}{#1}}
+\def\sl#1{{\textrm{\textsl{#1}}}}
+\let\bs\textbackslash
+\def\lr{\@ifstar\@lr@star\@lr}
+\def\@lr#1#2{\@@lr{#1}{#2}}
+\def\@lr@star#1#2{\@@lr{#1\\\mbox{}}{#2}}
+\def\@@lr#1#2{\mbox{}\texttt{\spaceskip.35em\@plus.2em\@minus.15em\relax #1}\hfill #2\par}
+\def\"{\char`"}
+\def\^{\char`^}
+\def\<{\char`<}
+\def\>{\char`>}
+\def\~{\char`~}
+\def\dots{{\rmfamily\ifmmode \mathellipsis \else \textellipsis \fi}}
+\newcommand{\Code}[1]{\texttt{\spaceskip.35em\@plus.2em\@minus.15em\relax #1}}
+\newif\ifprototype
+\newif\ifjquery
+\newif\ifdeanjs
+\makeatother
+
+\catcode`\<\active\catcode`\>\active
+\def<{\bgroup\normalfont\itshape}
+\def>{\/\egroup}
+
+\def\doif#1#2{\ifthenelse{\isempty{#1}}{}{#2}}
+
+\DefineVerbatimEnvironment{code}{Verbatim}
+{gobble=2,baselinestretch=.8,commandchars=\\\{\}}
+\renewcommand{\section}[2][]{\par\vspace{3ex}{\large{\textbf{\doif{#1}{#1 }#2}}}\par}
+\renewcommand{\subsection}[2][»]{\par\vspace{2ex}\textbf{#1 #2}\par}
+\def\br{\par\vspace{1.75ex}\par}
+
+\def\jQueryOnly{\includegraphics[height=1.5ex,width=1.5ex,keepaspectratio]{jquery_logo}}
+
+\def\th{$^{\mathrm{th}}$}\def\st{$^{\mathrm{st}}$}\def\nd{$^{\mathrm{nd}}$}\def\rd{$^{\mathrm{rd}}$}
+\pagestyle{empty}
+\begin{document}\small
+\begin{multicols*}3
+
+% Set Booleans, which libraries to include
+%-----------------------------------------
+\jquerytrue
+% \prototypetrue
+\deanjstrue
+
+
+\begin{center}
+  {
+    JavaScript
+    \ifprototype + prototype.js 1.6 \fi
+    \ifjquery    + jQuery 1.8 (\jQueryOnly) \fi
+  } Reference Guide\\
+  All funcs/methods work in FF 1.0+ and IE 6.0+\\
+  Version 0.10, Sep 2012 --- Dean Serenevy
+\end{center}
+
+\section{JavaScript Syntax}
+% |<script src="../|\sl{foo.js}|"></script>|\\
+% |<script language="javascript" type="text/javascript">
+% <!--
+%
+% script goes here
+%
+% // -->
+% </script>
+% |+,-,*,/,%,++,--,=,+=,-=,*=,/=,%=|\hfill operators\\
+\lr{var <foo>}{variable declaration}
+\lr{var <foo> = new <Bar>(<args>);}{object instantiation}
+\lr{\"5\"+\"5\"; 5+\"5\"; \"5\"+5;}{string concatenation (``55'')}
+\lr{==, ===}{equality, identity (value and type)}
+\br
+
+\lr{if (<A>) \{ \} else if (<B>) \{ \} else \{ \}}{}
+\lr{switch(<A>)\{case $C_1$:<X>; break; \dots~default:<X>;\}}{}
+\lr{function <foo>(<a1>,<a2>)\{\dots\}}{varargs in "arguments"}
+\lr{var i; for (i=0;i"<"=5;i++) \{\dots\}}{}
+\lr{var i; for (i in A) \{ \dots~A[i] \dots\}}{}
+\lr{while (<cond>) \{\dots\}; do \{\dots\} while (<cond>)}{}
+\lr{"break", "continue"}{leave loop, next iteration}
+\lr{try \{ \dots; throw \"<Blah>\"; \} catch(<err>) \{ \dots \}}{}
+
+\ifprototype
+\subsection{prototype Try}
+\lr{Try.these(f1,f2,\dots)}{return first result to not fail}
+\fi
+
+\section{Builtin Functions / Constants}
+\lr{alert(<msg>); confirm(<msg>); prompt(<msg>,<value>);}{}
+\lr{setTimeout(\"<eval str>\", <milliseconds>);}{}
+\lr{encodeURI(<str>)}{Encode special except ",/?:@\&=+\$\#"}
+\lr{encodeURIComponent(<str>)}{Encode all specials}
+% \lr{escape(<str>); unescape(<str>)}{Escape all but "*@-_+./"}
+\lr{isFinite(<n>); isNaN(<n>)}{}
+\lr{parseFloat(<str>); parseInt(<str>, <radix>)}{}
+\lr{Infinity, NaN, undefined, null}{}
+
+\section{Core "String"}
+\lr{.length}{number of characters}
+\lr{.charAt(<index>)}{returns single char string}
+\lr{.charCodeAt(<index>)}{Unicode decimal code point}
+\lr{.concat(<str2>,<str3>,\dots)}{concatenate}
+\lr{.fromCharCode(<n1>,<n2>,\dots)}{Unicode decimal code}
+\lr{.indexOf(<str>,\opt{<c>})}{start at char \textsl{c}}
+\lr{.lastIndexOf(<str>,\opt{<c>})}{skip \textsl{c} chars from end}
+\lr{.match(<regex>)}{array of matches (beware captures)}
+\lr{.replace(<pat>,<newstr>)}{regex or string pattern}
+\lr{}{\$1, \$2, \dots~allowed in <newstr>}
+\lr{.search(<regex>)}{position of match or $-1$}
+\lr{.slice(<beg>,\opt{<end>})}{0-based; negatives ok}
+\lr{.split(<sep>,\opt{<limit>})}{w/\sl{limit} discards extras}
+\lr{.substr(<beg>,\opt{<length>})}{0-based; negatives not ok}
+\lr{.substring(<beg>,\opt{<end>})}{0-based; negatives not ok}
+\lr{.toLowerCase(), .toUpperCase()}{}
+
+% \subsection{HTML wrapping}
+% |x="foo"; y=x.bold()|\hfill y=``$<$b$>$foo$<$/b$>$''\\
+% |.anchor(|\sl{name}|)|, |.link(|\sl{url}|)|\hfill \\
+% |.fontcolor(|\sl{color}|)|\hfill name, rgb(\dots), or ``\#aabbcc''\\
+% |.fontsize(|\sl{n}|)|\hfill n$\in\{1..7\}$\\
+% |.bold()|, |.italics()|, |.fixed()|, |.strike()|\\
+% |.sub()|, |.sup()|, |.big()|, |.small()|\\
+
+\ifjquery
+\subsection[\jQueryOnly]{jQuery string utils}
+\lr{\$.trim(<str>)}{trim leading and trailing whitespace}
+\lr{\$.parseXML(<str>)}{DOM object from string}
+\lr{\$.parseJSON(<str>)}{``safe'' parsing}
+\fi
+
+\ifprototype
+\subsection{prototype "String"}
+\lr{.blank()}{"/\^\bs s+\$/" or length == 0}
+\lr{.empty()}{length == 0}
+\lr{.escapeHTML(), .unescapeHTML()}{}
+\lr{.evalJSON(\opt{<sanitize>=false})}{}
+\lr{.parseQuery(\opt{<sep>=\"\&\"})}{parse query string}
+\lr{.sub(<pat>,<replace>,\opt{<count>=1})}{substitute \textsl{count} times}
+\lr{.gsub(<pat>,<replace>)}{globally, <replace> is Str|Func}
+\lr{}{func <replace>(<m>) \{ m.input, m[0], m.index \}}
+\lr{.include(<str>)}{true if includes substring}
+\lr{.startsWith(<str>)}{true if begins with given string}
+\lr{.endsWith(<str>)}{true if ends with given string}
+\lr{.strip()}{trim leading and trailing whitespace}
+\lr{.succ()}{successor, ``foo baz'' $\to$ ``foo ba\{''}
+\lr{.times(<n>)}{repeat <n> times}
+\lr{.toArray()}{character array}
+\lr{.truncate(<len>,\opt{<suffix>=\"\dots\"})}{trunc then append}
+\lr{.capitalize()}{``foo bar'' $\to$ ``Foo bar''}
+% \lr{\$w(<str>).invoke(\"capitalize\").join(\" \")}{``foo bar'' $\to$ ``Foo Bar''}
+\lr{.camelize()}{``foo-bar'' $\to$ ``fooBar''}
+\lr{.underscore()}{``fooBar'' $\to$ ``foo_bar''}
+\lr{.dasherize()}{``foo_bar'' $\to$ ``foo-bar''}
+\fi
+
+\ifdeanjs
+\subsection{Dean sprinth.js}
+\lr{sprinth(<fmt>,<hash>)}{plain JS or prototype Hash}
+Format replacements (escapes):\\
+\begin{tabular}{@{}L@{~}l@{\hspace{1em}}L@{~}l@{}}
+  \%\%        & literal \%                            & \%(<key>) & unescaped\\
+  \%\{<key>\} & HTML (\lit*{\&\<\>})                  & \%[<key>] & JavaScript (\texttt{\"'})\\
+  \%\<<key>\> & URI {\tiny $\to$ \%2F\%20}            & \%«<key>» & URI (except \lit*{/=?\&}\dots)\\
+\end{tabular}\\
+Ex: \verb!<p onclick="alert('%{[bar]}')">%{foo}</p>!
+\fi
+
+\ifdeanjs
+\subsection{Dean sprintf.js {\mdseries\small -- perl-like}}
+\lr{sprintf(<fmt>,<x1>,<x2>,\dots)}{surprisingly complete}
+Supported formats: b,c,d,u,f,o,s,x,X\\
+Supports: justification, padding, precision\\
+Examples: "%02d", "%.3f", "%\x5s" $\to$ ``xxfoo'', "%- 5s"
+\fi
+
+\section{Core "RegExp" {\mdseries\small -- perl-like}}
+\lit*{<r>=/<pat>/<mods>} or \lit*{<r>=new RegExp(\"<pat>\",\"<mods>\")}\\
+modifiers: "i", "g", "m"\\
+brackets: "[abc]", "[^abc]", "[red|green|blue]"\\
+metachars: ".\w\W\d\D\s\S\b\B\0\n\f\r\t"\\
+quantifiers: "a+", "a*", "a{1,3}", "a?", "^a", "a$", "(?=a)", "(?!a)"%$
+
+\lr{.lastIndex}{index to start next match, needs "/g"}
+\lr{.source}{text of the RegExp pattern}
+\lr{.test(<str>)}{test pattern on <str>, returns bool}
+\lr{.exec(<str>)}{test pattern on <str>, returns match|null}
+\lr{.compile(<newpat>)}{regex is now <newpat>}
+
+\section{Core "Object"}
+
+\ifjquery
+\subsection[\jQueryOnly]{jQuery Object Utils}
+\lr{\$.param(<obj>)}{string of query params}
+\lr{\$.extend(\opt{<deep>=false}, <obj>,<obj1>,\dots)}{merge hashes}
+\lr{
+  \$.isArray(<x>), \$.isEmptyObject(<x>), \$.isFunction(<x>),
+  \$.isNumeric(<x>), \$.isPlainObject(<x>), \$.isWindow(<x>),
+  \$.isXMLDoc(<x>)
+}{}
+
+\fi
+
+
+\ifprototype
+\subsection{prototype "Object"}
+\lr{.clone()}{\textsl{shallow} copy}
+
+\subsection{Call as \Code{Object.<foo>(<x>)} {\mdseries (does best effort)}:}
+\lr{.inspect(<x>)}{string representation}
+
+\lr{.isArray(<x>), .isElement(<x>), .isFunction(<x>), .isHash(<x>),
+  .isNumber(<x>), .isString(<x>), .isUndefined(<x>) .toHTML(<x>),
+  .toJSON(<x>), .toQueryString(<x>)}
+{}
+\fi
+
+\section{Core "Array"}
+\lr{.length}{}
+\lr{.concat(<A1>,<A2>,\dots)}{non-destructive}
+\lr{.pop(), .push(<elt>), .shift(), .unshift(<elt>)}{}
+\lr{.join(<sep>)}{}
+\lr{.reverse()}{destructive}
+\lr{.slice(<beg>,\opt{<end>})}{}
+\lr{.sort(func cmp(a,b)\{\})}{return neg if a before b}
+\lr{.splice(<beg>,<n>,\opt{$e_1$},\opt{$e_2$},\dots)}{remove <n>; insert $e_i$}
+
+\ifjquery
+\subsection[\jQueryOnly]{jQuery Iterable}
+\lr{\$.each(<iter>,<func>(<idx>,<item>))}{return "false" to stop}
+\lr{\$.grep(<iter>,<func>(<idx>,<item>),\opt{<invert>=false})}{}
+\lr{\$.map(<iter>,<func>(<idx>,<item>))}{}
+\lr{\$.inArray(<val>,<array>,\opt{<start>=0})}{returns index}
+\lr{\$.merge(<iter>, <iter>)}{mutating concatenation}
+\lr{.length}{}
+\lr{.toArray()}{}
+\lr{.each(<func>(<idx>,<item>))}{return "false" to stop early}
+\lr{.get(<idx>)}{get item at index, negative OK}
+\lr{.index(<sel>)}{index of first match}
+\fi
+
+\ifprototype
+\section{prototype "Enumerable"}
+Note: <id> = identity function; <ctx> = context (this)\\
+\lr{.size()}{number of items}
+\lr{.all, .any(\opt{<func>=<id>},\opt{<ctx>})}{are all/any true}
+\lr{.partition(\opt{<func>=<id>},\opt{<ctx>})}{$\to$ [trueArray,falseArray]}
+\br
+
+\lr{.map(\opt{<func>=<id>},\opt{<ctx>})}{``map''; apply and collect}
+\lr{.pluck(<prop>)}{like map(func(x)\{return x.<prop>\})}
+\lr{.each(\opt{<func>=<id>},\opt{<ctx>})}{``foreach''; apply and discard}
+\lr{.invoke(<method>,\opt{<args>})}{invoke method on each item}
+\br
+
+\lr{.grep(<filter>,\opt{<func>},\opt{<ctx>})}{search by RegEx|Str}
+\lr{}{and collect <func>(x)}
+\lr{.member(<elt>)}{true if <elt> in Enum}
+\lr{.find, .findAll(\opt{<func>},\opt{<ctx>})}{first/all satisfying <func>}
+\lr{.reject(\opt{<func>},\opt{<ctx>})}{opposite of findAll}
+\br
+
+\lr{.inGroupsOf(<n>,\opt{<filler>=null})}{AoA each with <n> items}
+\lr{.eachSlice(<n>,\opt{<func>=<id>},\opt{<ctx>})}{like inGroupsOf but no}
+\lr{}{filler and collect <func>(x)}
+\lr{.inject(<init>,<func>,\opt{<ctx>})}{``reduce'' in other languages}
+\lr{<A>.zip(<B>,<C>,\dots,\opt{<func>=<id>})}{result$_i$=<func>("["<A>$_i$,<B>$_i$,\dots"]")}
+\br
+
+\lr{.min, .max(\opt{<func>=<id>},\opt{<ctx>})}{min/max of <func>(x)}
+\lr{.sortBy(<trans>,\opt{<ctx>})}{sort by <trans>(x)}
+\fi
+
+\ifprototype
+\subsection{prototype "Array" {\mdseries [isa "Enumerable"]}}
+\lr{\$A(\opt{<obj>})}{constructor}
+\lr{\$w(<str>)}{split on whitespace}
+\lr{\$R(<beg>,<end>,\opt{<exclusive>=false})}{range <beg>..<end>}
+\br
+
+\lr{.clear()}{destructive}
+\lr{.compact()}{remove "null" and "undefined"}
+\lr{.flatten()}{non-destructive}
+\lr{.intersect(<array>)}{non-destructive}
+\lr{.last()}{last item}
+\lr{.indexOf(<item>,\opt{<beg>=0})}{}
+\lr{.lastIndexOf(<item>,\opt{<neg_offset>})}{}
+\lr{.reverse(\opt{<inline>=true})}{destructive if bool arg true}
+\lr{.uniq(\opt{<sorted>=false})}{more efficient if sorted=true}
+\lr{.without(<val1>,<val2>,\dots)}{non-destruuctive}
+\fi
+
+\section{Core "Math"}
+Call as class methods/attrs: "Math.PI", "Math.abs(x)"
+\br
+
+".E"=$e^1$, ".LN2"=$\log_e2$, ".LN10"=$\log_e10$, ".LOG2E"=$\log_2e$,
+".LOG10E"=$\log_{10}e$, ".PI", ".SQRT1_2"=$\sqrt{.5}$, ".SQRT2"=$\sqrt2$
+\br
+
+\lr{%
+.sin(<x>)
+.cos(<x>)
+.tan(<x>)
+}{}
+
+\lr{%
+.acos(<x>)
+.asin(<x>)
+.atan(<x>)
+.atan2(<y>,<x>)
+}{}
+
+\lr{%
+.abs(<x>)
+.ceil(<x>)
+.floor(<x>)
+.round(<x>)
+}{}
+
+\lr{%
+.exp(<x>)
+.log(<x>)\textrm{=}$\log_ex$
+.sqrt(<x>)
+.pow(<x>,<y>)\textrm{=}$x^y$
+}{}
+
+\lr{%
+.max(<x>,<y>)
+.min(<x>,<y>)
+.random()$\in[\,0,1)$
+}{}
+
+\section{Core "Number"}
+\lr{.toExponential(<n>)}{<n> digits after; ``1.00e+4''}
+\lr{.toFixed(<n>)}{<n> digits after; ``1234.00''}
+\lr{.toPrecision(<n>)}{<n> digits total}
+\lr{.toString(\opt{<radix>})}{\sl{radix}$\in\{2..36\}$}
+
+\ifprototype
+\subsection{prototype "Number"}
+\lr{.abs(), .ceil(), .floor()}{Math.<foo>(x)}
+\lr{.round()}{round to int -- Math.round(x)}
+\lr{.succ()}{successor $(n+1)$}
+\lr{.times(func <iter>(<i>)\{ \},\opt{<ctx>})}{repeat with count}
+% \lr{.toColorPart()}{$\equiv$ ".toPaddedString(2,16)"}
+\lr{.toPaddedString(<length>,\opt{<radix>})}{0-padded}
+\fi
+
+\ifprototype
+\section{prototype "Hash" {\mdseries\small [isa "Enumerable"]}}
+\lr{\$H(\opt{<obj>})}{constructor}
+\lr{.keys()}{array of keys}
+\lr{.values()}{array of values}
+\lr{.get(<key>)}{only one key at a time}
+\lr{.set(<key>,<value>)}{}
+\lr{.unset(<key>)}{remove <key> from hash}
+\lr{.each(func <iter>(<t>)\{ \},\opt{<ctx>})}{t.key, t.value}
+\lr{.index(<value>)}{first key found with <value>}
+\lr{.merge(<obj>)}{new merged hash}
+\lr{.update(<obj>)}{destructive form of "merge"}
+\lr{.toObject()}{downgrade to vanilla hash}
+\lr{.toQueryString()}{}
+\fi
+
+\ifprototype
+\section{prototype Functions}
+\lr{.bind(<ctx>,\opt{<arg1>},\opt{<arg2>},\dots)}{set this=ctx, curry args}
+\lr{.curry(<args>,\dots)}{curry arguments}
+\lr{.defer(<args>,\dots)}{curry and run when bored}
+\lr{.delay(<secs>,\opt{<args>},\dots)}{run after timeout (0.1 ok)}
+\lr{.wrap(func <wrap>(<orig>,<args>,\dots)\{ {\dots} \})}{}
+\fi
+
+\section{Core "Date"}
+\lr{var now = new Date()}{}
+\lr{.getTime}{epoch time in milliseconds}
+\lr{.getMonth(), .getDate()}{0--11, 1--31}
+\lr{.getFullYear()}{4-digit year}
+\lr{.getDay()}{day of week: Sunday=0--6}
+\lr{.getHours(), .getMinutes(), .getSeconds(),
+.getMilliseconds()}{0--23, 0--59, 0--59, 0--999}
+Also:\\
+\lr{.getUTC<Foo>(), .set<Foo>(<x>), .setUTC<Foo>(<x>)}{}
+\br
+
+\lr{.getTimezoneOffset()}{\#minutes offset from GMT}
+\lr{.toLocaleDateString()}{``10/28/2009''}
+\lr{.toLocaleTimeString()}{``11:02:48 PM''}
+\lr{.toLocaleString()}{{\footnotesize Wed 28 Oct 2009 11:03:09 PM EDT}}
+\lr{.toUTCString()}{``Thu, 29 Oct 2009 03:03:28 GMT''}
+
+\ifprototype
+\subsection{prototype "Date"}
+\lr{.toJSON()}{``1969-12-31T16:00:00Z'' (always GMT)}
+\fi
+
+
+\newpage
+
+
+\begin{center}
+  {
+    JavaScript
+    \ifprototype + prototype.js 1.6 \fi
+    \ifjquery    + jQuery 1.8 (\jQueryOnly) \fi
+  } DOM Reference Guide\\
+  All funcs/methods work in FF 1.0+ and IE 6.0+\\
+%   {\footnotesize (Thus, probably all modern browsers)}}
+  Version 0.10, Sep 2012 --- Dean Serenevy
+\end{center}
+
+\section{"document" and related}
+\lr{.domain, .referrer, .title, .URL}{document info}
+
+\lr{navigator.cookieEnabled}{bool cookie test}
+
+\lr{var h = window.history;}{}
+\lr*{h.length, h.back(), h.forward(), h.go(<where>)}
+    {<where>=-1,-2,\dots or URL}
+
+\lr{var l = window.location;}{}
+\lr{l.hash}{set or return URL from "\#" on}
+\lr{l.search}{query params from "?" on}
+\lr{l.pathname}{path of url}
+\lr{l.href}{entire url (include params+hash)}
+\Code{l.hostname, location.port, l.host, l.protocol l.reload(),
+  l.replace(<new_url>)}
+
+\ifjquery
+\subsection[\jQueryOnly]{jQuery "document"}
+\lr{\$(<func>())}{callback now or when DOM ready}
+
+\lr{\$(window).height()}{height of browser viewport}
+\lr{\$(document).height()}{height of HTML document}
+\fi
+
+\ifprototype
+\subsection{prototype "document"}
+\lr*{.observe(\"dom:loaded\",<handler>)}
+    {DOM loaded, does not wait for images to finish}
+
+\lr{.loaded}{bool: DOM tree ready for manipulation}
+\lr{.viewport.getDimensions()}{\Code{\{width:<x>, height:<y>\}}}
+\lr{.viewport.getHeight()}{pixel height of page in view}
+\lr{.viewport.getWidth()}{pixel width of page in view}
+\lr{.viewport.getScrollOffsets()}{\Code{\{left:<x>, top:<y>\}}}
+\fi
+
+
+\section{Core "Event"}
+\lr{.type}{name of the event}
+% \lr{.button|}{mouse button clicked when event triggered}
+\lr{.keyCode||.which}{reliable only for keydown|keyup}
+\lr{}{interpret via Str.fromCharCode(x)|constants below}
+\lr*{.altKey, .ctrlKey, .metaKey, .shiftKey}
+    {true if corresponding key was down during event}
+
+\subsection{Core events}
+\lit*{on<foo>} for plain JS, but as-is in most JS libraries\\
+Grey events have more than usual incompatibilities\\[-.5ex]
+\lr{}{{\footnotesize http://www.quirksmode.org/dom/events/index.html}}
+\br
+
+\lr{load, error, abort}{event in page or image load}
+\lr{focus, blur}{element gains/loses focus}
+\lr{\opt{keydown}, \opt{keypress}, keyup}{keyboard key event}
+\lr{\opt{change}}{content of a field changes}
+\lr{mousedown, mouseup}{recommended button events}
+\lr{click, dblclick}{clicks -- also fires mouse-down/up!}
+\lr{mouseenter, mouseleave}{over/not over element}
+\lr{}{IE only, but emulated in major libraries}
+\lr{mouseover, mouseout}{same, but re-fire ``out''}
+\lr{}{then ``over'' for child elements (bubble)}
+\lr{mousemove}{mouse is moved}
+\lr{reset, submit}{form button events}
+\lr{resize}{window or frame is resized}
+\lr{select}{selection made in text input field}
+\lr{unload}{user exits the page}
+
+\ifjquery
+\subsection[\jQueryOnly]{jQuery "Event"}
+\lr{.data}{<data> passed at ".on()" time}
+\fi
+
+\ifprototype
+\subsection{prototype "Event" XXX:TO FINISH}
+\lr{func <handler>(<event>)\{/* this=<observed element> */\}}{}
+<sel>: CSS selector expression
+\br
+
+\lr{.memo}{<memo> value from ".fire" call}
+\lr{.findElement(<sel>)}{event element, then up ancestors}
+% \lr{.findElement(<sel>)}{ancestor of event elmt match <sel>}
+\lr{.isLeftClick(), .isMiddleClick(), .isRightClick()}{}
+\lr{.stop()}{prevent default action and stop bubbling}
+\lr{.pointer()}{page (document) absolute: \lit*{\{x:<a>, y:<b>\}}}
+% .pointerX(), .pointerY()
+%
+% $('records').observe('click',function(event) {
+%   var clickedRow;
+%   clickedRow = event.findElement('tr');
+%   if (clickedRow) {
+%     this.down('th').update("You clicked record #" + clickedRow.readAttribute("data-recnum"));
+%   }
+% });
+\fi
+
+\ifprototype
+\subsection{prototype "Event" key constants}
+\Code{%
+  .KEY_BACKSPACE, .KEY_TAB, .KEY_RETURN, \mbox{.KEY_ESC}, .KEY_LEFT,
+  .KEY_UP, .KEY_RIGHT, .KEY_DOWN, .KEY_DELETE, .KEY_HOME, .KEY_END,
+  .KEY_PAGEUP, .KEY_PAGEDOWN
+}
+\fi
+
+
+\section{Core "Element"}
+Attributes avail.~as props:~(others in line w/element)\\
+\lr{.id, .title, .name, .accessKey, .tabIndex, .alt}{}
+\lr{.innerHTML}{for container objects}
+
+\subsection{"a"\hfill {\tt\small .href}}
+
+\subsection{"img"\hfill {\tt\small .src}}
+\lr{.complete}{true if image finished downloading}
+
+\subsection{"table"\hfill {\tt\small .cellPadding, .cellSpacing}}
+\lr{.rows[]}{array of tr elements}
+\lr{.caption}{caption element object}
+\lr{.createCaption()}{new element inserted into DOM}
+\lr{.deleteRow(<idx>)}{remove row from table}
+
+\subsection{"td" or "th"\hfill {\tt\small .colSpan, .rowSpan, .vAlign}}
+\lr{.cellIndex}{index within row}
+
+\subsection{"tr"\hfill {\tt\small .vAlign}}
+\lr{.cells[]}{array of td/th elements}
+\lr{.rowIndex}{index within table}
+\lr{.deleteCell(<idx>)}{remove cell from row}
+
+\subsection{"form"\hfill {\tt\small .action, .method, .encoding}}
+\lr{.reset(), .submit()}{corresponding action}
+\ifjquery\lr{.serialize()}{format form as query string \jQueryOnly}\fi
+
+\subsection{Form Elements\hfill {\tt\footnotesize .disabled,.readOnly,.value,.type}}
+\lr{.form}{associated form}
+\subsection{form:~\texttt{input type="button|reset|submit"}}
+\lr{.click()}{}
+\subsection{form:~\texttt{input type="checkbox|radio"}\hfill {\tt\small .checked}}
+\lr{.defaultChecked}{would be checked by default?}
+\subsection{form:~\texttt{input type="text|password"}\hfill {\tt\small .maxLength}}
+\lr{.defaultValue}{}
+\lr{.select()}{select (hilight) text in entry}
+\subsection{form:~\texttt{option}\hfill {\tt\small .selected}}
+\lr{.defaultSelected}{true if is default option}
+\lr{.index}{position in dropdown list}
+\lr{.text}{display text}
+\subsection{form:~\texttt{select}\hfill {\tt\small .multiple, .size}}
+\lr{.options[]}{array of option objects}
+\lr{.length}{number of objects}
+\lr{.selectedIndex}{}
+\subsection{form:~\texttt{textarea}\hfill {\tt\small .cols, .rows}}
+\lr{.defaultValue}{}
+\lr{.select()}{select (hilight) text in entry}
+
+
+\ifjquery
+\section[\jQueryOnly]{jQuery Elements}
+\lr{.attr(<name>)}{get attr value}
+\lr{.attr(<name>,<val>), .attr(<hash>)}{set attr values}
+\lr{.removeAttr(\"<name1> <name2> \dots\")}{}
+\br
+
+\lr{.addClass(\"<class1> <class2> \dots\")}{}
+\lr{.removeClass(\"<class1> <class2> \dots\")}{}
+\lr{.hasClass(<name>)}{}
+\lr{.toggleClass(<classes>,\opt{<switch>})}{force with <switch>}
+\lr{.is(<what>)}{}
+\br
+
+
+\lr{.clone(\opt{<meta>=false})}{clones events if <meta>="true"}
+\lr{.html(), .html(<html>)}{get/set inner HTML}
+\lr{.text(), .text(<html>)}{get/set inner text content}
+\lr{.val(), .val(<val>)}{get/set form field value}
+\lr{.css(<prop>), .css(<prop>,<val>)}{get/set CSS props}
+\lr{}{both "foo-bar" and "fooBar" format supported}
+\lr{.data(<key>), .data(<key>,<val>)}{get/set arbitrary data}
+\br
+
+\lr*{.height(), .width(), .height(<val>), .width(<val>)}
+    {px size excluding border, margin, and padding}
+\lr{.innerHeight(), .innerWidth()}{px size w/padding}
+\lr*{.outerHeight(\opt{<margin>=false}), .outerWidth(\opt{\dots})}
+    {px size w/padding+border (+margin if "true")}
+\br
+
+\lr{.position()}{relative to parent, \Code{\{top:<y>,left:<x>\}}}
+\lr{.offset(), .offset(<pos>)}{absolute, \Code{\{top:<y>,left:<x>\}}}
+\fi
+
+
+\ifjquery
+\subsection{jQuery Selectors}
+\lr{<tag>}{elements with tag name}
+\lr{\#<id>}{element of given id}
+\lr{.<class>}{element of given class}
+\lr{<parent> {\>} <child>}{child selector}
+\lr{<ancestor> <descendent>}{descendent match}
+\lr{<prev> + <next>}{adjacency (selects <next>)}
+\lr{<prev> {\~} <siblings>}{all siblings following <prev>}
+\br
+
+\lr{[<name>]}{has a <name> attribute}
+\lr{[<name>\,=\,<value>]}{exactly equal}
+\lr{[<name>\,\^=\,<value>]}{starts with match}
+\lr{[<name>\,\$=\,<value>]}{ends with match}
+\lr{[<name>\,\~=\,<value>]}{word match (space separators)}
+\lr{[<name>\,!=\,<value>]}{not equal (or <name> not set)}
+\lr{[<name>\,*=\,<value>]}{substring match}
+\lr{[<name>\,|=\,<value>]}{equal or starts with ``<value>"-"''}
+\br
+
+\lr{:animated}{currently in animation sequence}
+\lr{:button}{button or input type button}
+\lr{:checked, :selected}{checked/selected elements}
+\lr{:contains(<str>)}{text content contains <str>}
+\lr{:focus}{currently focused}
+\lr{:empty}{no children (including text nodes)}
+\lr{:even, :odd, :first, :last}{}
+\lr{:eq(<idx>), :lt(<idx>), :gt(<idx>)}{n-th matches}
+\lr{:first-child, :last-child, :nth-child(<n>)}{}
+\lr{:only-child, :parent}{}
+\lr{:has(<sel>)}{has any descendent which matches <sel>}
+\lr{:not(<sel>)}{does not match <sel>}
+\lr{:disabled, :enabled, :hidden, :visible}{}
+\lr{:header}{h1, h2, \dots}
+\lr{:checkbox, :image, :input, :password, :radio, :reset, :submit, :text}{}
+\fi
+
+
+\ifjquery
+\subsection{jQuery DOM manipulation}
+\lr{\$(<html>)}{Create elements}
+\br
+
+\lr{<A>.append(<B>),<A>.prepend(<B>)}{}
+\lr{<B>.appendTo(<A>),<B>.prependTo(<A>)}{}
+\lr{}{insert <B> as last/first child of <A>}
+\br
+
+\lr{.index()}{index of element in list of siblings}
+\lr{<A>.before(<B>),<A>.after(<B>)}{}
+\lr{<B>.insertBefore(<A>),<B>.insertAfter(<A>)}{}
+\lr{}{insert <B> as prev/next sibling to <A>}
+\br
+
+\lr{.remove()}{remove and free memory}
+\lr{.empty()}{remove all children}
+\lr{.detach()}{``remove'' but keep in memory}
+\lr{.replaceWith(<elmt>)}{remove self and insert <elmt>}
+\br
+
+\lr{.wrap(<elmt>)}{clone of <elmt> as parent to each}
+\lr{.wrapInner(<elmt>)}{clone of <elmt> as first child of each}
+\lr{.wrapAll(<elmt>)}{single <elmt> as parent to collection}
+\lr{.unwrap()}{remove element's parent}
+\fi
+
+
+\ifjquery
+\subsection{jQuery DOM traversal}
+These (except "is") produce new iterables\\
+\lr{.eq(<idx>), .first(), .last()}{}
+\lr{.slice(<beg>, \opt{<end>=last})}{negatives ok}
+\lr{.filter(<sel>), .filter(<func>(<idx>))}{}
+\lr{.add(<sel>), .add(<iter>), .add(<html>)}{}
+\lr{.not(<sel>), .not(<func>(<idx>))}{}
+\lr{.is(<sel>), .is(<func>(<idx>))}{returns bool}
+\lr{.map(<func>(<idx>,<item>))}{builds iter of return vals}
+\lr{.has(<sel>)}{has any descendent which matches <sel>}
+\br
+
+When <sel> provided, only return those matching it\\
+\lr{.children(\opt{<sel>}), .parents(\opt{<sel>}), .siblings(\opt{<sel>})}{}
+\lr{.next(\opt{<sel>}), .prev(\opt{<sel>}), .parent(\opt{<sel>})}{immediate}
+\lr{.find(\opt{<sel>})}{descendent nodes}
+\lr{.closest(<sel>)}{first self or ancestor}
+\lr{.nextAll(\opt{<sel>}), .prevAll(\opt{<sel>})}{all siblings}
+\lr*{.nextUntil(<sel>\,|<node>,\opt{filter}), .parentsUntil(\dots)}
+    {up to <sel> (not including) filtered by <filter>}
+\lr{.contents()}{ALL children (node, text, comment)}
+\fi
+
+
+\ifjquery
+\subsection{jQuery Element Effects}
+duration <dur> is in ms or "fast" or "slow"\\
+<func> called at end with "this" set to element\\
+\lr{.delay(<dur>)}{delay before executing next effect}
+\lr{.stop(\opt{<clear>=true},\opt{<jump_end>=false})}{stop anims}
+\lr{.show(\opt{<dur>=0},\opt{<func>()}), .hide(\dots)}{anims w,h,alpha}
+\lr{.slideDown(\opt{<dur>=400},\opt{<func>()}),.slideUp,.slideToggle}{}
+\lr{.fadeIn(\opt{<dur>=400},\opt{<func>()}), .fadeOut, .fadeToggle}{}
+\lr{.fadeTo(<dur>,<opacity>,\opt{<func>()})}{}
+\lr{.animate(<css_props>, \opt{<dur>=0}, \opt{<func>()})}{}
+
+% $('#foo').slideUp(300).delay(800).fadeIn(400);
+\fi
+
+\ifjquery
+\subsection{jQuery Element Events}
+\lr*{\$(\"\#Tab tbody\").on(\"click\", \"tr\", do_stuff)}
+    {in "do_stuff", "this" will be the tr element}
+\br
+
+\lr{.trigger(<event>, [\opt{args}])}{}
+
+\lr{.on(<event>,\opt{<selector>},\opt{<data>},<func>(<event>))}{}
+\lr{.one(<event>,\opt{<selector>},\opt{<data>},<func>(<event>))}{}
+\lr*{.off(<event>,\opt{<selector>},<func>(<event>))}
+    {<selector> in "off" must exactly match "on" value}
+\br
+
+\lr{<event>.stopPropagation()}{do not trigger parents}
+\lr{<event>.preventDefault()}{skip browser action}
+Returning "false" from callback stops both
+
+% \begin{code}
+%   // NOT needed for "ready"
+%   \$("\sl{stuff}").one("load", function() \{
+%       // do something
+%   \})
+%   .each(function() \{
+%       if(this.complete) \$(this).trigger("load");
+%   \});
+% \end{code}
+\fi
+
+
+\ifprototype
+\section{prototype "Selector"}
+\lr{\$(<id>), \$(<id1>,<id2>,\dots)}{Element or array of elements}
+\lr{\$\$(<sel1>,<sel2>,\dots)}{array of Elements by CSS selector}
+\lr{Selector.findChildElements(<element>,<sel>)}{}
+\lr{Selector.findElement(<elements>,<sel>,\opt{<index>=0})}{}
+\lr{Selector.matchElements(<elements>,<sel>)}{grep/filter}
+% \lr{Selector.split(<expression>)}{split comma sep. selectors}
+\lr{<x> = new Selector(<expression>)}{}
+\lr{<x>.findElements(<root>)}{like findChildElements}
+\lr{<x>.match(<element>)}{true if element matches selector}
+\fi
+
+\ifprototype
+\section{prototype "Element"}
+\lr{new Element(<tagName>,<attribute_hash>)}{}
+% Class methods:
+% |.addMethods(<tagName>,<hash_of_meth})|}{}
+
+\lr{.identify()}{(auto-gen if necessary) element id}
+\lr{.classNames()}{array of class names}
+\lr{.addClassName(<name>), .removeClassName(<name>),
+.toggleClassName(<name>), .hasClassName(<name>)}
+\br
+
+\lr{.getStorage()}{Hash for arbitrary info on element}
+\lr{.store(<key>,<val>), .retrieve(<key>,<default>)}{}
+\br
+
+\lr{.hide(), .show(), .toggle()}{change visibility}
+\lr{.visible()}{boolean for visibility state}
+\lr{.getStyle(<prop>)}{font-size|fontSize form}
+\lr{.setStyle(<hash>)}{plain hash with camelCase keys}
+\br
+
+\lr{.makeClipping(), .undoClipping()}{simulate clip}
+\lr{.makePositioned(), .undoPositioned()}{}
+\lr{.getOpacity(), .setOpacity(<val>)}{<val> $\in[0,1]$}
+\br
+
+% \lr{.getHeight(), .getWidth()}{}
+\lr{.getDimensions()}{\Code{\{width:<w>, height:<h>\}}}
+\lr{.absolutize(), .relativize()}{}
+\lr{.clonePosition(<src>,\opt{<opt>})}{<opt>: set<Foo> (bool;~Left,}
+\lr{}{Top, Width, Height); offset<Foo> (int; Top, Left)}
+\br
+
+\lr{.scrollTo()}{scroll so element at top of viewport}
+\lr{.getOffsetParent()}{closest positioned ancestor}
+\lr{.positionedOffset()}{offset rel.~to ".getOffsetParent"}
+\lr{.cumulativeOffset(). .cumulativeScrollOffset(), .viewportOffset()}
+   {\Code{\{0:<l>, 1:<t>, left:<l>, top:<t>\}}}
+\fi
+
+\ifprototype
+\subsection{prototype Events}
+\lr{.fire(<event>,\opt{<memo>},\opt{<bubble>=true})}{custom events ok}
+\lr{.observe(<event>,<handler>)}{}
+\lr{.stopObserving(\opt{<name>},\opt{<handler>})}{}
+\fi
+
+\ifprototype
+\subsection{prototype DOM Traversal}
+% {\tiny (http://www.eskimo.com/~bloo/indexdot/css/syntax/selectors/selectors.htm)}}
+<sel>: CSS selector
+
+\lr{.match(<sel>)}{true if element matches selector}
+\lr{.descendantOf(<e2>)}{is "this" decendant of <e2>?}
+\br
+
+\lr{.ancestors(), .siblings()}{array of elements}
+\lr{.childElements(), .descendants()}{ditto}
+\lr{.nextSiblings(), .previousSiblings()}{ditto}
+\lr{.adjacent(\opt{<sel>})}{siblings matching \textsl{sel}}
+\lr{.select(<sel1>,<sel2>,\dots)}{descendants matching any}
+\br
+
+\lr{.firstDescendant()}{first non-text child}
+\lr{.down(\opt{<sel>},\opt{<n>=0}), .up(\opt{<sel>},\opt{<n>=0})}{$n$\th~desc/parent}
+\lr{.next(\opt{<sel>},\opt{<n>=0}), .previous(\opt{<sel>},\opt{<n>=0})}{$n$\th~sibling}
+% \lr{.recursivelyCollect(<prop>)}{as in prop=``parentNode''}% or ``nextSibling''
+\fi
+
+\ifprototype
+\subsection{prototype DOM Manipulation}
+\lr{.insert(<what>)}{String of HTML | Element | Hash}
+\lr{}{\Code{\{<where>:<what>\}}, <where>=before|after|top|bottom}
+\lr{.remove()}{remove from DOM and return element}
+\lr{.replace(<new>)}{replace element, return old element}
+\lr{.update(<new_content>)}{replace element content}
+\lr{.wrap(<wrapper>,<attr>)}{<wrapper>=Element|tag name}
+\lr{.clone(\opt{<deep>=false})}{}
+\br
+
+\lr{.cleanWhitespace()}{remove ws-only text children}
+\lr{.empty()}{contains only whitespace?}
+\lr{.readAttribute(<name>), .writeAttribute(<name>,<val>)}{}
+\lr{.writeAttribute(<hash>)}{}
+\fi
+
+
+
+\ifdeanjs
+\section{Dean cookies.js}
+\lr{setCookie(<name>,<val>,\opt{<expiredays>},\opt{<path>})}{}
+\lr{getCookie(<name>), deleteCookie(<name>)}{}
+\fi
+
+\ifdeanjs
+\section{Dean sort_tables.js}
+\lr*{sortTable(<id>,<colNo>,\opt{<order>=1},\opt{<nrHeaders>=0})}
+    {$\text{\textsl{order}}\in\{1,-1\}$, leave top \textsl{nrHeaders} in place}
+\fi
+
+
+\ifjquery
+\section[\jQueryOnly]{AJAX in jQuery}
+
+\subsection{Making Requests}
+<type>: expected return type: xml|json|script|html
+\br
+
+\lr*{.load(<url>,<data>,<complete>(<text>,<status>,<jqXHR>))}{Loads response into element}
+\lr{\$.get(<url>,<data>,<sucess>(<data>,<status>,<jqXHR>),<type>)}{}
+\lr{\$.post(<url>,<data>,<sucess>(<data>,<status>,<jqXHR>),<type>)}{}
+\br
+
+\lr{\$.getJSON(<url>,<data>,<sucess>(<data>,<status>,<jqXHR>))}{}
+\lr{\$.getScript(<url_js>,<sucess>(<data>,<status>,<jqXHR>))}{}
+\br
+
+\lr*{\$.ajax(<url>,<settings>)}{See: http://api.jquery.com/jQuery.ajax/}
+
+\subsection{AJAX Settings}
+Set global settings via: \Code{\$.ajaxSetup(<settings>)}
+
+\lr{\"beforeSend\": func(<jqXHR>, <settings>)}{}
+\lr{\"xhrFields\": \{ <fields> \}}{}
+
+\subsection{Global Event Handlers}
+Attach to element which becomes "this"\\
+\lr{.ajaxStart(<f>())}{Begin ajax batch}
+\lr{.ajaxSend(<f>(<event>, <jqXHR>, <opt>))}{each request}
+\lr{.ajaxComplete(<f>(<event>, <HttpReq>, <opt>))}{}
+\lr{.ajaxSuccess(<f>(<event>, <HttpReq>, <opt>))}{}
+\lr{.ajaxError(<f>(<event>, <jqXHR>, <settings>, <err>))}{}
+\lr{.ajaxStop(<f>())}{End ajax batch}
+\fi
+
+
+
+% \section{XMLHttpResponse (prototype-ed)}
+%
+% \section{Timed Execution}
+% new PeriodicalExecuter(callback,frequency)
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%
+% \columnbreak
+%%%%%%%%%%%%%%%%%%%%%
+
+
+\end{multicols*}
+\end{document}
