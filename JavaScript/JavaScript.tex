@@ -118,7 +118,7 @@
 
 \section{Builtin Functions / Constants}
 \lr{alert(<msg>); confirm(<msg>); prompt(<msg>,<value>);}{}
-\lr{setTimeout(\"<eval str>\", <milliseconds>);}{}
+\lr{setTimeout(\"<eval str>\"|<Func>, <milliseconds>);}{}
 \lr{encodeURI(<str>)}{Encode special except ",/?:@\&=+\$\#"}
 \lr{encodeURIComponent(<str>)}{Encode all specials}
 % \lr{escape(<str>); unescape(<str>)}{Escape all but "*@-_+./"}
@@ -206,6 +206,7 @@ Examples: "%02d", "%.3f", "%\x5s" $\to$ ``xxfoo'', "%- 5s"
 
 \section{Core "RegExp" {\mdseries\small -- perl-like}}
 \lit*{<r>=/<pat>/<mods>} or \lit*{<r>=new RegExp(\"<pat>\",\"<mods>\")}\\
+\lit*{if (/<pat>/.test(<string>)) \{ {\dots} \}}\\
 modifiers: "i", "g", "m"\\
 brackets: "[abc]", "[^abc]", "[red|green|blue]"\\
 metachars: ".\w\W\d\D\s\S\b\B\0\n\f\r\t"\\
@@ -218,6 +219,7 @@ quantifiers: "a+", "a*", "a{1,3}", "a?", "^a", "a$", "(?=a)", "(?!a)"%$
 \lr{.compile(<newpat>)}{regex is now <newpat>}
 
 \section{Core "Object"}
+\lr{for (key in obj) \{ obj[key]{\dots} \}}{}
 
 \ifjquery
 \subsection[\jQueryOnly]{jQuery Object Utils}
@@ -246,13 +248,14 @@ quantifiers: "a+", "a*", "a{1,3}", "a?", "^a", "a$", "(?=a)", "(?!a)"%$
 \fi
 
 \section{Core "Array"}
+\lr{for (i in items) \{ items[i]{\dots} \}}{}
 \lr{.length}{}
 \lr{.concat(<A1>,<A2>,\dots)}{non-destructive}
 \lr{.pop(), .push(<elt>), .shift(), .unshift(<elt>)}{}
 \lr{.join(<sep>)}{}
 \lr{.reverse()}{destructive}
 \lr{.slice(<beg>,\opt{<end>})}{}
-\lr{.sort(func cmp(a,b)\{\})}{return neg if a before b}
+\lr{.sort(\opt{func cmp(a,b)\{\}})}{return neg if a before b}
 \lr{.splice(<beg>,<n>,\opt{$e_1$},\opt{$e_2$},\dots)}{remove <n>; insert $e_i$}
 
 \ifjquery
@@ -495,7 +498,8 @@ Grey events have more than usual incompatibilities\\[-.5ex]
 \lr{load, error, abort}{event in page or image load}
 \lr{focus, blur}{element gains/loses focus}
 \lr{\opt{keydown}, \opt{keypress}, keyup}{keyboard key event}
-\lr{\opt{change}}{content of a field changes}
+\lr{input}{content of a field changes (HTML5)}
+\lr{\opt{change}}{content of a field changes (exit field)}
 \lr{mousedown, mouseup}{recommended button events}
 \lr{click, dblclick}{clicks -- also fires mouse-down/up!}
 \lr{mouseenter, mouseleave}{over/not over element}
@@ -548,6 +552,7 @@ Grey events have more than usual incompatibilities\\[-.5ex]
 
 \section{Core "Element"}
 Attributes avail.~as props:~(others in line w/element)\\
+\lr{.tagName}{}
 \lr{.id, .title, .name, .accessKey, .tabIndex, .alt}{}
 \lr{.innerHTML}{for container objects}
 
@@ -673,8 +678,12 @@ Attributes avail.~as props:~(others in line w/element)\\
 
 \ifjquery
 \subsection{jQuery DOM manipulation}
-\lr{\$(<html>)}{Create elements}
-\br
+\lr{\$(<html>), \$(\"\<<tag>/\>\", <attrs>)}{Create elements}
+\begin{code}
+  \$("<div/>", \{ "class": "t", "text": "Click!",
+  "click": function()\{\$(this).toggleClass("t");\}
+  \}).appendTo("body");
+\end{code}
 
 \lr{<A>.append(<B>),<A>.prepend(<B>)}{}
 \lr{<B>.appendTo(<A>),<B>.prependTo(<A>)}{}
@@ -889,19 +898,39 @@ Returning "false" from callback stops both
 \section[\jQueryOnly]{AJAX in jQuery}
 
 \subsection{Making Requests}
+\begin{code}
+  \$.get(<url>,<data>,<success_func>)
+      .error(<f>(<jqXHR>,<jqMsg>,<serverMsg>))
+      .complete(<f>(<jqXHR>,<jqMsg>))
+  ;
+\end{code}
+
+\lr{<jqMsg>}{= "null"|success|timeout|error|abort|parsererror}
+\lr{<serverMsg>}{= ``Not Found''|``Internal Server Error''|\dots}
+
 <type>: expected return type: xml|json|script|html
 \br
 
-\lr*{.load(<url>,<data>,<complete>(<text>,<status>,<jqXHR>))}{Loads response into element}
-\lr{\$.get(<url>,<data>,<sucess>(<data>,<status>,<jqXHR>),<type>)}{}
-\lr{\$.post(<url>,<data>,<sucess>(<data>,<status>,<jqXHR>),<type>)}{}
+\lr*{.load(<url>,<data>,<complete>(<text>,<jqMsg>,<jqXHR>))}{Loads response into element}
+\lr{\$.get(<url>,<data>,<sucess>(<data>,<jqMsg>,<jqXHR>),<type>)}{}
+\lr{\$.post(<url>,<data>,<sucess>(<data>,<jqMsg>,<jqXHR>),<type>)}{}
 \br
 
-\lr{\$.getJSON(<url>,<data>,<sucess>(<data>,<status>,<jqXHR>))}{}
-\lr{\$.getScript(<url_js>,<sucess>(<data>,<status>,<jqXHR>))}{}
+\lr{\$.getJSON(<url>,<data>,<sucess>(<data>,<jqMsg>,<jqXHR>))}{}
+\lr{\$.getScript(<url_js>,<sucess>(<data>,<jqMsg>,<jqXHR>))}{}
 \br
 
 \lr*{\$.ajax(<url>,<settings>)}{See: http://api.jquery.com/jQuery.ajax/}
+
+\subsection{jqHXR methods}
+\lr{.error(<func>), .success(<func>), .complete(<func>)}{}
+\lr{.readyState}{"1"=open, "2"=sent, "3"=recving, "4"=loaded}
+\lr{.status}{HTTP status code (when readyState $\ge3$)}
+\lr{.statusText}{HTTP status text from server}
+\lr{.responseXML, .responseText}{}
+\lr{.getAllResponseHeaders()}{unparsed text headers}
+\lr{.getResponseHeader(<name>)}{}
+\lr{.abort()}{cancel network activity}
 
 \subsection{AJAX Settings}
 Set global settings via: \Code{\$.ajaxSetup(<settings>)}
