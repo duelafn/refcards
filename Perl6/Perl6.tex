@@ -1,0 +1,529 @@
+\documentclass{article}
+\usepackage{fontspec}
+\usepackage[centering,width=10in,height=7.5in]{geometry}
+\usepackage{parskip}
+\parskip 0pt
+\geometry{landscape}
+\usepackage{amsfonts,amsmath,amssymb,graphicx}
+\usepackage{multicol,xcolor,shortvrb,fancyvrb}
+\setlength{\columnsep}{4em}
+\let\epsilon\varepsilon\let\phi\varphi
+\usepackage{syntax}% http://www.ctan.org/pkg/syntax-mdw
+\usepackage{xparse}% http://www.ctan.org/pkg/xparse
+\usepackage{newunicodechar}%% Also need \usepackage[utf8]{inputenc} if not using xelatex
+\usepackage{tcolorbox}
+\usepackage{tabularx}
+\usepackage{xspace}
+
+\newif\ifcolor
+\colortrue
+
+% COMMANDS:
+%----------
+% \rv{Int}         return value
+% \comment{# ...}  comment
+% \text#1          typeset in text style
+% \subtitle#1      subtitle in block
+%
+% _  |             underscore, verticalbar
+% \string_         underscore in file name or reference
+% "#1"             a ShortVerb  (two versions available, see below)
+% \lr{foo}         left align code, linebreak
+% \lr{foo}{bar}    left align code, right align text, linebreak
+% \lr*{foo}{bar}   left align code, linebreak, right align text
+% <#1>             for meta-syntax  (method 1)
+% «#1»             for meta-syntax  (method 2)
+% \sl#1            slanted text ("fixes" plain TeX \sl command)
+% \opt#1           for optional parameters
+% code             fancyvrb environment allowing \commands and «...»
+% \Code{...}       like \lit*{...}
+% \columnbreak     for breaking columns
+% \"\^\<\>\~       literal ", ^, <, >, ~
+% \bs              \textbackslash
+\makeatletter
+\syn@shorts\relax\relax
+\addspecial\|\catcode`\|\active
+\addspecial\"\catcode`\"\active%% can use commands in "..."
+\let\Myulitleft\ulitleft
+\renewcommand{\ulitleft}{\color{ttcolor}\Myulitleft}
+% \shortverb{"}%% may not use commands in "..."
+\def\opt#1{\textcolor[gray]{.5}{#1}}
+\def\sl#1{{\textrm{\textsl{#1}}}}
+\let\bs\textbackslash
+
+% Colors: may redefine in .tex file after importing refcard
+\definecolor{secfrcolor}{rgb}{0.2,0.2,0.4}            % Section Frame Color
+\definecolor{secbgcolor}{rgb}{0.2,0.4,0.6}            % Section Background Color
+\definecolor{subsecfrcolor}{rgb}{0.4,0.6,0.6}         % Subsection Frame Color
+\definecolor{subsecbgcolor}{rgb}{0.6,0.8,0.8}         % Subsection Background Color
+\definecolor{backcolor}{rgb}{0.937,0.969,1.000}       % Column Environment Color
+\definecolor{commentcolor}{rgb}{0.8353,0.0000,0.0000} % Comment Color
+\definecolor{metacolor}{rgb}{0.4588,0.4588,0.4588}    % Metasyntax Color (grey)
+\definecolor{textcolor}{rgb}{0.1020,0.1373,0.4941}    % Non-Literal Text Color
+\definecolor{ttcolor}{rgb}{0,0,0}                     % Typewriter (Literal) Text Color
+
+\NewDocumentCommand\lr{smG{}}{%
+\begin{flushright}
+\mbox{}\texttt{\spaceskip.35em\@plus.2em\@minus.15em\relax\color{ttcolor} #2}%
+\hfill\IfBooleanTF{#1}{\mbox{}\\\mbox{}\hfill}{} #3\mbox{}
+\end{flushright}}
+
+\def\"{\char`"}
+\def\^{\char`^}
+\def\<{\char`<}
+\def\>{\char`>}
+\def\~{\char`~}
+\def\dots{{\rmfamily\ifmmode \mathellipsis \else \textellipsis \fi}}
+\newcommand{\Code}[1]{\texttt{\spaceskip.35em\@plus.2em\@minus.15em\relax\color{ttcolor} #1}}
+\makeatother
+
+\newunicodechar{«}{\metavar}%» stupid emacs
+\def\metavar#1»{{\normalfont\itshape\color{metacolor}#1\/}}
+
+\catcode`\<\active\catcode`\>\active
+\def<{\bgroup\normalfont\itshape\color{metacolor}}
+\def>{\/\egroup}
+
+\DefineVerbatimEnvironment{code}{Verbatim}
+{gobble=2,baselinestretch=.8,commandchars=\\\{\},formatcom=\color{ttcolor}}
+
+\def\section#1{\par\vspace{3ex}{\large{\textbf{#1}}}\par}
+\def\subsection#1{\par\vspace{2ex}\textbf{» #1}\par}
+\def\br{\vspace{1.75ex}}
+
+\setmainfont[Mapping=tex-text]{Linux Libertine O}
+\setmonofont[Scale=MatchLowercase]{Inconsolata}% fonts-inconsolata. Note: "Mapping=tex-text" makes -- become endash (bad for code)
+% \setmonofont[Scale=MatchLowercase]{DejaVu Sans Mono}% Note: "Mapping=tex-text" makes -- become endash (bad for code)
+
+\newenvironment{titlesection}{\begin{center}}{\end{center}}
+\NewDocumentEnvironment{block}{o}{\IfValueTF{#1}{\subsection{#1}}{}}{}
+
+\ifcolor
+\def\section#1{\par
+  \begin{tcolorbox}[coltext=white,colframe=secfrcolor,colback=secbgcolor,boxrule=0.5pt,left=6pt,right=6pt,top=4pt,bottom=3pt,arc=0pt,boxsep=0pt,width=\hsize]
+    \large \textbf{#1}
+  \end{tcolorbox}\nopagebreak\par}
+\def\subsection#1{\par
+  \begin{tcolorbox}[coltext=textcolor,colframe=subsecfrcolor,colback=subsecbgcolor,boxrule=0.5pt,left=6pt,right=6pt,top=1pt,bottom=1pt,arc=0pt,boxsep=0pt,width=\hsize]
+    \textbf{#1}
+  \end{tcolorbox}\par}
+
+\renewenvironment{titlesection}
+{\begin{tcolorbox}[coltext=textcolor,colframe=black,colback=black,boxrule=0pt,left=6pt,arc=0pt,boxsep=0pt,width=\hsize]\color{white}\centering}
+{\end{tcolorbox}\par}
+
+\RenewDocumentEnvironment{block}{o}%
+{\IfValueTF{#1}%
+{\begin{tcolorbox}[coltext=textcolor,colframe=backcolor,colback=backcolor,boxrule=0pt,left=3pt,right=3pt,top=3pt,bottom=3pt,arc=0pt,boxsep=0pt,width=\hsize,toptitle=2pt,bottomtitle=2pt,coltitle=textcolor,colbacktitle=subsecbgcolor,title={#1}]}%
+{\begin{tcolorbox}[coltext=textcolor,colframe=backcolor,colback=backcolor,boxrule=0pt,left=3pt,right=3pt,top=3pt,bottom=3pt,arc=0pt,boxsep=0pt,width=\hsize,toptitle=2pt,bottomtitle=2pt,coltitle=textcolor,colbacktitle=subsecbgcolor]}%
+}
+{\end{tcolorbox}}
+\fi
+
+\def\rv#1{{\color{metacolor}$\to$#1}}
+\def\comment#1{{\ifcolor\color{commentcolor}\fi#1}}
+\def\text#1{{\normalfont\color{textcolor}#1}}
+\let\subtitle\tcbsubtitle
+
+\pagestyle{empty}
+% \raggedcolumns
+\begin{document}\small
+\ifcolor\color{textcolor}\fi
+\begin{multicols*}3
+
+\begin{titlesection}
+  {\large\bfseries Perl 6.0.0 Reference Guide}\\
+  Version 0.6, Dec 2015 --- Dean Serenevy\\
+  \texttt{CC0} / Dedicated to Public Domain
+\end{titlesection}
+
+\section{Basic Expressions}
+\begin{block}[Variables]
+\Code{\$scalar, @array, \%hash, \&code}
+\lr{@array[], @array[<0>], @array[<2>,<3>]}{all, item, slice}
+\lr{\%hash\{\}, \%hash\{'<x>'\}, \%hash\{'<x>','<y>'\}}{all, item, slice}
+\lr{\%hash\<<x>\>, \%hash\<<x y>\>}{item, slice}
+\lr{\%hash\<<x>\>:exists, \%hash\<<y>\>:delete}
+\lr{{\~} <\$x>, + <\$x>, ? <\$x>}{string, numeric, boolean coersion}
+\end{block}
+
+\begin{block}[Numbers / Constants / Special Values]
+\lr{10_000, 0xBEEF, 0o755; -2.5, 1/3}{Int; Rat}
+\lr{1e0, 6.022e23; 1+2i, 6.123e5i}{Num; Complex}
+\lr{constant <answer> = <42>;}{defining constants}
+\lr{Nil, True, False}{undefined value, true, false}
+\lr{pi, $\pi$; tau, $\tau$; e}{3.14159\dots; 6.28318\dots; 2.71828\dots}
+\end{block}
+
+\begin{block}[Pairs]
+\lr{<foo> {=\>} <42>, '<foo>' {=\>} <32>, (<STRING_EXPRESSION>) {=\>} <32>}
+\lr{:<foo>, :!<foo>}{"<foo> {=\>} True|False"}
+\lr{:<foo>(<\$bar>)}{"<foo> {=\>} <\$bar>"}
+\lr{:<foo>\<<quoted list>\>}{"<foo> {=\>} \<<quoted list>\>"}
+\lr{:<foo>\string«<interpolated list>\string»}{"<foo> {=\>} \string«<interpolated list>\string»"}
+\lr{:<foo>['<some>', '<vals>']}{"<foo> {=\>} ['<some>', '<vals>']"}
+\lr{:<foo>\{<key> {=\>} '<val>'\}}{"<foo> {=\>} \{<key> {=\>} '<val>'\}"}
+\lr{:\$<foo>}{"<foo> {=\>} \$<foo>"}
+\end{block}
+
+\begin{block}[Quoting]
+\lr{Q[ ], Q{\<} \>, Q\{ \}, ...}{literal -- no escaping at all}
+\lr{Q:q[ \bs] ], q[ \bs] ], ' \bs' '}{terminator escaping}
+\lr{Q:qq[ ], qq[ <2\texttt{*}>\$<x> <=> \{ 2*\$<x> \}, @<arr>[] ]}{interpolation}
+\lr{\"\$<x>.lc(), @<arr>.join(\", \") <@foo.com>\"}{interpolation}
+\lr{Q:w[ ], qw[ ], {\<} <x y z> {\>}}{word quoting}
+\lr{Q:qq:w[ ], qqw[ ], \string« \$<x> <y z> \string»}{interp.~word quoting}
+\lr{Q:x[ ], qx[ <ps auxx> ]}{shell command}
+\lr{Q:qq:x[ ], qqx[ <ps | grep '>\$<prog'> ]}{interp.~shell cmd}
+\lr{Q:to/<END>/ <...> <END>}{heredoc (may indent)}
+\end{block}
+
+\section{Flow Control}
+\begin{block}
+\lr{if <EXPR> \{ \} elsif <EXPR> \{ \} else \{ \}}
+\lr{unless <EXPR> \{ \}}{no else allowed}
+\lr{for <LIST> \{ \}}{implicit \Code{\$_} arg}
+\lr{for <LIST> -\>~\$<x>, \$<y> \{ \}}{explicit args (n at a time ok)}
+\lr{for <LIST> -\>~\$<x> is rw \{ \}}{mutator (also "is copy")}
+\lr{while|until <EXPR> \{ \}}
+\lr{repeat while|until <EXPR> \{ \}}{do at least once}
+\lr{loop \{ \}; loop (<INIT>;<TEST>;<ITER>) \{ \}}{parens required}
+\lr{next, last, redo}{for/while/until/loop controls}
+\lr*{given <EXPR> \{ when <EXPR> \{ \} default \{ \} \}}{use "proceed" for fall-through, "succeed" for break}
+\end{block}
+
+\section{Operators (Round 1)}
+\begin{block}
+\lr{cmp}{automatic string-or-numeric}
+\lr{\<=\>, ~\<, \<=, ==, \>=, ~\>, !=}{numerical comparison}
+\lr{leg, lt, le, eq, ge, gt, ne}{string comparison}
+\lr{+, -, *, /, \%, **}{math operators}
+\lr{\$<a> mod \$<b>, \$<a> lcm \$<b>, \$<a> gcd \$<b>}{}
+\lr{\$<a> div \$<b>, \$<a> \%\% \$<b>}{integer division, bool \Code{0 == \$<a> \% \$<b>}}
+\lr{\~\~, !\~\~}{smart or regex match, non-match}
+\lr{<COND> ?? <IFTRUE> !! <IFFALSE>}{ternary operator}
+\lr{+\&, +|, +\^, +\<, +\>}{bitwise ops, bit shift}
+\lr{\&, |, \^}{Junction: "all", "any", "one" (no operator for "none")}
+\end{block}
+
+\section{Subroutines}
+\begin{block}
+\begin{code}
+  \comment{# auto-numifies: nice("2", "3") \(\to\) ok}
+  sub «nice»($«x», $«y») \{ $«x» + $«y» \}
+
+  \comment{# caller must numify: naughty("2", "3") \(\to\) error}
+  sub «naughty»(Num $«x», Num $«y») \{ $«x» + $«y» \}
+
+  \comment{# with coersion: nice("2", "3") \(\to\) ok}
+  sub «nice»(Num() $«x», Num() $«y») \{ $«x» + $«y» \}
+
+  \comment{# Need "proto" declaration to cache a multi sub}
+  \comment{# Coerce to Int to reduce cache space}
+  proto fib(Int() $) is cached \{ * \}
+  multi sub fib(0) \{ 1 \}
+  multi sub fib(1) \{ 1 \}
+  multi sub fib($a) \{ fib($a-1) + fib($a-2) \}
+\end{code}
+\end{block}
+
+\section{Pattern Matching (RegExp)}
+\begin{block}
+\lr{/.../, rx/.../, rx[...]}{Regex object constructors}
+\lr{my regex <foo> \{ <PAT> \}}{named Regex}
+\lr{my token <foo> \{ <PAT> \}}{implies \Code{:r} (no backtracking)}
+\lr{my rule <foo> \{ <PAT> \}}{implies \Code{:r:s} (+significant space)}
+\lr{\$<x> {\~\~} /.../, \$<x> {\~\~} m\%...\%, \$<x>.match(\$<pat>)}{do match}
+\lr{\$<x> {\~\~} s/.../.../}{perform replacement}
+\end{block}
+
+\begin{block}[Regex Patterns]
+\lr{/ '<a literal>' /}{quotes optional if pattern is alnum}
+\lr{\bs d, \bs D, \bs w, \bs W}{unicode digit/non, wordy-character/non}
+\lr{\bs n, \bs N, \bs s, \bs S}{logical newline/non, whitespace/non}
+\lr{\bs h, \bs H, \bs v, \bs V}{horizontal space/non, vertical/non}
+\lr{. ~ \<[ a..f 0..9 ]{\>} ~ \<-[{\"}']\>}{any char, char class, neg}
+\lr{\<:<Sm>\>, \<:!<Sm>\>, \<:<M>|:<P>-:<Sm>\>}{unicode properties}
+\end{block}
+
+\begin{block}[Quantifiers]
+\lr{<x>+ ~ <x>* ~ <x>?}{1 or more, 0 or more, 0 or 1}
+\lr{<x> ** <2>..<5>}{between 2 and 5}
+\lr{<x>+ {\%} '<,>' ~ <x>+ {\%\%} '<,>'}{w/separator, allow trailing sep}
+\end{block}
+
+\begin{block}[Anchors]
+\lr{{\^} ~ {\^\^} ~ {\$\$} ~ {\$}}{start str, start line, end line, end str}
+\lr{{\<\<} ~ {\string«} ~ {\>\>} ~ {\string»}}{2 ways beginning of word, end of word}
+\lr{{\<?after <PAT>\>} {\<?!after <PAT>\>}}{at/not at end of <PAT>}
+\end{block}
+
+\begin{block}[Grouping]
+\lr{(...) ~ [...]}{capturing (\$0,\$1,\dots), non-capturing group}
+\lr{[<P> || <Q>] ~ [<P> | <Q>]}{first alternative, longest alternative}
+\lr{{\$\<<nam>\>} = <PAT>}{named capture \Code{\~\$\<nam\>}}
+\lr{\<<foo>\>}{pre-declared named regex capture \Code{\~\$\<foo\>}}
+\lr{\<<bar>=<foo>\>}{aliased named regex capture \Code{\~\$\<bar\>}}
+\end{block}
+
+\begin{block}[Regex Adverbs]
+\lr{rx:i/<a>/, /:i <a>/, /[:s<a> <b>] :i <c>/}{before, inside, local}
+\lr{:ignorecase, :i}{case insensitive}
+\lr{:ratchet, :r}{no backtracking}
+\lr{:sigspace, :s}{match \Code{\<.ws\>} if space \textsl{follows} a chunk}
+\end{block}
+
+\begin{block}[Matching Adverbs]
+\lr{\$<x> {\~\~} m:g/<a>/, \$<x>.match(/.../, :g)}{external only!}
+\lr{:global, :g}{find all (non-overlapping) matches}
+\lr{:overlap, :ov}{find one match at each possible start}
+\lr{:exhaustive, :ex}{find all (overlapping) matches}
+\lr{}{Note: ":g" $\subseteq$ ":ov" $\subseteq$ ":ex"}
+\lr{:continue(<n>), :c(<n>)}{start search at char <n>}
+\lr{:pos(<n>), :p(<n>)}{anchor search at char <n>}
+\end{block}
+
+\begin{block}[Examples]
+\lr{say '\"in quotes\"' {\~\~} / '\"' \<-[ {\"} ]{\>} * '\"'/;}
+\end{block}
+
+\section{Operator Precedence}
+Associativity: (L)eft, (R)ight, (N)on, (C)hained, (X) list
+\begin{block}
+\begin{tabularx}{\hsize}{@{}p{1ex}p{2.2cm}X@{}}
+  L & Method postfix   & \Code{.meth .+ .? .* .() .[] {.\{\}} .{\<}{\>} {.\string«\string»} .:: .= {.\^} .:}\\
+  N & Autoincrement    & \Code{++ --}\\
+  R & Exponentiation   & \Code{**}\\
+  L & Symbolic unary   & \Code{! + - {\~} ? | || {+\^} {\~\^} {?\^} \^}\\
+  L & Multiplicative   & \Code{* / {\%} {\%\%} {+\&} {+\<} {+\>} {\~\&} {\~\<} {\~\>} {?\&} div mod gcd lcm}\\
+  L & Additive         & \Code{+ - +| {+\^} {\~|} {\~\^} ?| ?\^}\\
+  L & Replication      & \Code{x xx}\\
+  X & Concatenation    & \Code{\~}\\
+  X & Junctive and     & \Code{\&}\\
+  X & Junctive or      & \Code{| \^}\\
+  L & Named unary      & \Code{temp let}\\
+  N & Structural infix & \Code{but does {\<}={\>} leg cmp .. ..{\^} {\^}..}\\
+  C & Chaining infix   & \Code{!= == {\<} {\<}= {\>} {\>}= eq ne lt le gt ge {\~}{\~} === eqv !eqv}\\
+  X & Tight and        & \Code{\&\&}\\
+  X & Tight or         & \Code{|| {\^}{\^} // min max}\\
+  R & Conditional      & \Code{?? !! ff fff}\\
+  R & Item assignment  & \Code{= {=}{\>} += -= **= xx= .=}\\
+  L & Loose unary      & \Code{so not}\\
+  X & Comma operator   & \Code{, :}\\
+  X & List infix       & \Code{Z minmax X {X\~} X* Xeqv}\\
+  R & List prefix      & \Code{print push say [+] [*] any Z=}\\
+  X & Loose and        & \Code{and andthen}\\
+  X & Loose or         & \Code{or xor orelse}\\
+  X & Sequencer        & \Code{{\<}== {==\>} {\<}{\<}== =={\>}{\>}}\\
+  N & Terminator       & \Code{;\quad {\{\dots\}}\quad ) ] \}\quad unless}
+\end{tabularx}
+\end{block}
+
+\section{Types}
+\begin{block}
+\lr{Bool, Bit}
+\lr{Int, Rat, FatRat, UInt, Num, Complex}
+\lr{Str, Blob, Buf}
+\lr{Char, Byte, Codepoint, Grapheme}
+\lr{int32, complex64, buf8, buf32, \dots}{Native types}
+utf8 IO Mu Any Cool Junction
+Supply Whatever Match Nil Parcel Capture Signature Pair Range Set Bag Mix
+SetHash BagHash MixHash Scalar Array Hash Code Enum Order TrigBase Block
+Routine Sub Method Regex Cursor Failure Exception Instant Duration Date
+DateTime
+\end{block}
+
+\section{Files}
+\begin{block}
+\lr{my \$fh = open(\"<path/to/file>\", <:r>)}{Open file}
+\lr{:r, :w, :rw, :a}{read, write, read-write, append}
+\lr{:bin, :chomp, :nl\<<\bs r\bs n>\>, :enc\<<UTF-8>\>}{other opts}
+\subtitle{\texttt{.IO} is your friend}
+\lr{\"<myfile>\".IO.lines(:enc\<UTF-8\>)}{lines (chomped!)}
+\lr{\"<myfile>\".IO.slurp(:enc\<UTF-8\>)}{slurp!}
+\lr{\"<myfile>\".IO.open(:enc\<UTF-8\>).print(<stuff>)}{spew!}
+\lr{\"<myfile>\".IO.e}{Exists (also ".d .f .l .r .w .x .s .z")}
+\lr{dir(\"</etc>\")}{list of IO objects, skips "." and ".."}
+\lr{dir(\"</etc>\",test={\>} *.IO.d)}{list dirs only (includes ".", "..")}
+See also: IO::Path
+\end{block}
+
+\section{Processes}
+\begin{block}
+\lr{shell(\$<cmd>), run(*@<args>)}{command with/out shell return Proc::Status objects}
+\lr{qx[ <cmd> ], qqx[ <cmd> ]}{execute and canpture STDOUT}
+\end{block}
+
+\section{Testing}
+\begin{block}
+\begin{code}
+  use Test;
+  pass "«Hooray»"; flunk "«Bummer»"; diag "«A Message»";
+
+  ok   \$«val», \$«msg»;
+  nok  \$«val», \$«msg»;
+  is   \$«val», «A::Type», \$«msg»;  \comment{# === comparison}
+  is   \$«val», \$«wanted», \$«msg»; \comment{# string eq}
+  isnt \$«val», \$«wanted», \$«msg»;
+  like \$«val», \$«pat», \$«msg»;    \,\comment{# regex, also unlike()}
+
+  cmp-ok \$«val», '«==»', \$«wanted», \$«msg»; \comment{# any operator}
+  is-deeply \$«val», \$«wanted», \$«msg»;
+  is-approx \$«val», \$«wanted», \$«msg»;    \comment{# within 1e-5}
+  isa-ok \$«val», \$type, \$«msg»;   \,\comment{# type name or class}
+
+  subtest \{ «\dots tests \dots» \}, \$«msg»; \comment{# test group}
+  dies-ok \{ «\dots code \dots» \}, \$«msg»;
+  lives-ok \{ «\dots code \dots» \}, \$«msg»;
+  throws-like \{ «\dots code \dots» \}, «X::Type», \$«msg»;
+
+  done;
+\end{code}
+\end{block}
+
+\section{Objects}
+\begin{block}
+\begin{code}
+  class Foo \{
+    my \$static      = True; \comment{# private static}
+    my \$.pub-static = 42;   \comment{# public static}
+
+    has \$!x;       \comment{# private}
+    has \$.y;       \comment{# public read-only}
+    has \$.z is rw; \comment{# public read-write}
+    has @.w;       \comment{# public read-only array}
+
+    method «add-item»(\$val) \{
+      self.«whatever»;   \comment{# Methods on \texttt{self}}
+      @!w.push: \$val;  \comment{# Note! \texttt{@!w}}
+    \}
+
+    \comment{# We get a key/value .new() for free.}
+    \comment{# Override for positional (not best practices!)}
+    method new(\$x, *@w) \{
+      return self.bless(:\$x, :w[42, |@w]);
+    \}
+
+    \comment{# Run code at build time}
+    method BUILDALL (|c) \{
+      nextsame;
+      \comment{# other code, self already populated...}
+    \}
+
+    \comment{# Manipulate your attrs at init}
+    submethod BUILD (\$!y, \$!z, @w) \{
+      \comment{# auto-bind y, z (note "!"), manually set w}
+      @!w = [ 42, |@w ];
+    \}
+  \}
+\end{code}
+\end{block}
+
+\section{Grammars}
+\begin{block}
+\begin{code}
+  class Action \{
+    has \$.type;   has \$.args;
+    method act(\$c) \{ ... \}
+  \}
+\end{code}
+\end{block}
+\begin{block}
+\begin{code}
+  grammar MyGrammar \{
+    token TOP \{ ^ <action> [ {\bs}n+ <action> ]* {\bs}s* \$ \}
+    token ws \{ {\bs}h* \}
+
+    proto rule action \{*\}
+    rule action:sym<*> \{
+      <type=.identifier> <args=.rest>
+    \}
+    rule action:sym<whatever> \{ ... \}
+
+    token identifier \{ {\bs}w+ \}
+    token rest       \{ .*  \}
+  \}
+\end{code}
+\end{block}
+\begin{block}
+\begin{code}
+  class MyActions \{
+    method TOP(\$/) \{ \$/.make: \$<block>».made \}
+
+    method action:sym<*>(\$/) \{
+      \$/.make: Action.new(
+          type => ~\$<type>, args => ~\$<args>
+      );
+    \}
+  \}
+\end{code}
+\end{block}
+For precedence / calculator:
+\begin{block}
+\begin{code}
+  rule expr \{ <expr> [ <infix> <expr> ]+ \}
+
+  proto token infix \{*\}
+  token infix:sym<+>                \{ <sym> \}
+  token infix:sym<-> is equiv:<+>   \{ <sym> \}
+  token infix:sym<*> is tighter:<+> \{ <sym> \}
+  token infix:sym</> is equiv:<*>   \{ <sym> \}
+  token infix:sym<^> is tighter:<*> \{ <sym> \}
+\end{code}
+\end{block}
+
+
+\section{Core Classes}
+\begin{block}[DateTime]
+\lr{DateTime.new(:\$year, :\$month, \dots, \$timezone)}
+\lr{DateTime.now; DateTime.new(<Instant>)}
+\lr{.clone(:\$year, :\$month, \dots)}{copy then update}
+\lr{.hour, .minute, .whole-second, .second}
+\lr{.year, .month, .day}{natural ints}
+\lr{.timezone := .offset}{seconds offset from UTC}
+\lr{.day-of-week, .day-of-year, .days-in-month}
+\lr{(\$year, \$week) = .week}{\$year may differ from .year}
+\lr{.instant, .posix}
+\lr{.later(<year> {=\>} <1>).earlier(<day> {=\>} <1>)}{one attr at a time}
+\lr{.Date, .truncated-to(\"<day>\")}{As a "Date" or truncated}
+\lr{.utc, .local, .in-timezone(<tz>)}
+\end{block}
+
+\begin{block}[IO::Path]
+\lr*{.dirname, .basename, .extension, .volume}{``foo/bar.baz'' "--\>" ``foo'', ``bar.baz'', ``baz''}
+\lr{.parts}{Hash with "dirname", "path", and "volume"}
+\lr{.watch}{"Supply" notifying of changes}
+\lr{.absolute, .relative, .is-absolute, .is-relative}
+\lr{.dir, .dir(test ={\>} *.d)}{readdir, see ``Files'' above}
+\lr{chmod(<mode>,<paths>), mkdir(<mode>,<paths>)}{modes: 0o777}
+\lr{move(<f>,<t>), rename(<f>,<t>), copy(<f>,<t>)}{take ":createonly"}
+\lr{link(<old>,<new>), symlink(<o>, <n>)}
+\lr{unlink(<files>), rmdir(<dirs>)}
+\lr{.modified, .accessed, .changed}{"Instant" obj}
+\end{block}
+
+\begin{block}[IO::Handle]
+\lr{.get, .getc}{one line, character}
+\lr{.lines, .words}{lazy list of lines or words}
+\lr{.print}{general output}
+\lr{.read, .write}{read/write binary "Blob" data}
+\lr{.seek(\$offset, \$whence), .tell}
+\lr{.ins}{number of lines read so far}
+\lr{.slurp-rest(:bin | :enc\<...\>)}
+\subtitle{From \texttt{IO} base}
+\lr{.say, .note, .dd}{println, print gists, print data}
+\end{block}
+
+\begin{block}[Proc::Status]
+\lr{?\$s}{true on successful exit}
+\lr{+\$s, \$s.exit()\rv{Int}}{exit status}
+\lr{.signal()\rv{Int}}{Signal::SIGSEGV, Signal::SIGPIPE, \dots}
+\lr{.pid()\rv{Int}}{undef if unknown}
+\end{block}
+
+% \section{Rakudo Star Classes}
+% \section{Non-Core Classes}
+
+
+\end{multicols*}
+\end{document}
