@@ -1,5 +1,5 @@
 
-SUBDIRS = JavaScript gpg
+SUBDIRS = JavaScript Perl6 gpg
 
 
 DISTDIRS = $(SUBDIRS:%=dist-%)
