@@ -139,12 +139,14 @@
 
 \section{Basic Expressions}
 \begin{block}[Variables]
-\Code{\$scalar, @array, \%hash, \&code}
+\Code{\$scalar, @array, \%hash, \&code}\\
+\Code{\$var1, \$var_one, \$var-one, \$var1_, \$_var}
 \lr{@array[], @array[<0>], @array[<2>,<3>]}{all, item, slice}
 \lr{\%hash\{\}, \%hash\{'<x>'\}, \%hash\{'<x>','<y>'\}}{all, item, slice}
 \lr{\%hash\<<x>\>, \%hash\<<x y>\>}{item, slice}
 \lr{\%hash\<<x>\>:exists, \%hash\<<y>\>:delete}
 \lr{{\~} <\$x>, + <\$x>, ? <\$x>}{string, numeric, boolean coersion}
+\lr{| @x, |(0..5)}{list expansion}
 \end{block}
 
 \begin{block}[Numbers / Constants / Special Values]
@@ -167,6 +169,7 @@
 \end{block}
 
 \begin{block}[Quoting]
+\lr{\comment{\# comment}, \comment{\#`(inline comment)}}
 \lr{Q[ ], Q{\<} \>, Q\{ \}, ...}{literal -- no escaping at all}
 \lr{Q:q[ \bs] ], q[ \bs] ], ' \bs' '}{terminator escaping}
 \lr{Q:qq[ ], qq[ <2\texttt{*}>\$<x> <=> \{ 2*\$<x> \}, @<arr>[] ]}{interpolation}
@@ -180,8 +183,9 @@
 
 \section{Flow Control}
 \begin{block}
-\lr{if <EXPR> \{ \} elsif <EXPR> \{ \} else \{ \}}
-\lr{unless <EXPR> \{ \}}{no else allowed}
+\lr{if <EXPR> \{ \} elsif <EXPR> \{ \} else \{ \}}{boolean test}
+\lr{with <EXPR> \{ \} orwith <EXPR> \{ \} else \{ \}}{definedness}
+\lr{unless <EXPR> \{ \}, without <EXPR> \{ \}}{no else allowed}
 \lr{for <LIST> \{ \}}{implicit \Code{\$_} arg}
 \lr{for <LIST> -\>~\$<x>, \$<y> \{ \}}{explicit args (n at a time ok)}
 \lr{for <LIST> -\>~\$<x> is rw \{ \}}{mutator (also "is copy")}
@@ -190,40 +194,125 @@
 \lr{loop \{ \}; loop (<INIT>;<TEST>;<ITER>) \{ \}}{parens required}
 \lr{next, last, redo}{for/while/until/loop controls}
 \lr*{given <EXPR> \{ when <EXPR> \{ \} default \{ \} \}}{use "proceed" for fall-through, "succeed" for break}
+\lr{<EXPR> if|unless|for|while|until <EXPR>;}
+\end{block}
+\begin{block}[Exceptions]
+\begin{code}
+  try \{\comment{# try is optional, can CATCH in any block}
+   ...
+   \comment{# CATCH may appear anywhere within block}
+   \comment{# is in same scope so vars are accessible}
+   CATCH \{
+     when X::AdHoc \{ \comment{\#`(Type thrown for die «msg»)} \}
+     when X::IO \{ ... \}
+     default \{ ... \}
+   \}
+   LEAVE \{
+     \comment{# a general phaser, but worth special mention}
+     \comment{# Like “finally” in other languages}
+   \}
+   ...
+   die \"Oops\";\comment{# X::AdHoc.new(:payload<Oops>).throw}
+   ...
+  \}
+\end{code}
 \end{block}
 
 \section{Operators (Round 1)}
 \begin{block}
 \lr{cmp}{automatic string-or-numeric}
-\lr{\<=\>, ~\<, \<=, ==, \>=, ~\>, !=}{numerical comparison}
-\lr{leg, lt, le, eq, ge, gt, ne}{string comparison}
-\lr{+, -, *, /, \%, **}{math operators}
-\lr{\$<a> mod \$<b>, \$<a> lcm \$<b>, \$<a> gcd \$<b>}{}
-\lr{\$<a> div \$<b>, \$<a> \%\% \$<b>}{integer division, bool \Code{0 == \$<a> \% \$<b>}}
 \lr{\~\~, !\~\~}{smart or regex match, non-match}
+\lr{leq, lt, le, eq, ge, gt, ne}{string comparison}
+\lr{\~, x}{string concat, string replication}
+\lr{\<=\>, ~\<, \<=, ==, \>=, ~\>, !=}{numerical comparison}
+\lr{+, -, *, /, \%, **}{math operators}
+\lr{\$<a> mod \$<b>, \$<a> lcm \$<b>, \$<a> gcd \$<b>, \$a++, \$a--}{}
+\lr{\$<a> div \$<b>, \$<a> \%\% \$<b>}{integer division, bool \Code{0 == \$<a> \% \$<b>}}
 \lr{<COND> ?? <IFTRUE> !! <IFFALSE>}{ternary operator}
 \lr{+\&, +|, +\^, +\<, +\>}{bitwise ops, bit shift}
 \lr{\&, |, \^}{Junction: "all", "any", "one" (no operator for "none")}
+\lr{1..5, 1..\^6, 0\^..\^6, \^6}{each is range 1,2,3,4,5}
+\end{block}
+
+\section{I/O}
+\begin{block}
+\lr{say \"Hello\"; print \"Hello\";}{output with/out newline}
+\lr{prompt(\"? \"); get()}{chomped input with/out prompt}
+\lr{slurp \$file; spurt \$file, \$content}{easy read/write}
+\end{block}
+\begin{block}[Files]
+\lr{my \$fh = open(\"<path/to/file>\", <:r>)}{Open file}
+\lr{:r, :w, :rw, :a}{read, write, read-write, append}
+\lr{:bin, :chomp, :nl\<<\bs r\bs n>\>, :enc\<<UTF-8>\>}{other opts}
+\subtitle{\texttt{.IO} is your friend}
+\lr{\"<myfile>\".IO.lines(:enc\<UTF-8\>)}{lines (chomped!)}
+\lr{\"<myfile>\".IO.slurp(:enc\<UTF-8\>)}{slurp!}
+\lr{\"<myfile>\".IO.open(:enc\<UTF-8\>).print(<stuff>)}{spew!}
+\lr{\"<myfile>\".IO.e}{Exists (also ".d .f .l .r .w .x .s .z")}
+\lr{dir(\"</etc>\")}{list of IO objects, skips "." and ".."}
+\lr{dir(\"</etc>\",test={\>} *.IO.d)}{list dirs only (includes ".", "..")}
+See also: IO::Path
 \end{block}
 
 \section{Subroutines}
 \begin{block}
+\lr{sub «s» \{...\}, sub «s» \{???\}, sub «s» \{!!!\}}{stub/predelcare}
+\subtitle{Type Signatures}\vspace{-1.5ex}
 \begin{code}
   \comment{# auto-numifies: nice("2", "3") \(\to\) ok}
   sub «nice»($«x», $«y») \{ $«x» + $«y» \}
-
   \comment{# caller must numify: naughty("2", "3") \(\to\) error}
   sub «naughty»(Num $«x», Num $«y») \{ $«x» + $«y» \}
-
   \comment{# with coersion: nice("2", "3") \(\to\) ok}
   sub «nice»(Num() $«x», Num() $«y») \{ $«x» + $«y» \}
-
+\end{code}
+\end{block}
+\begin{block}[Optional and default arguments]
+\begin{code}
+  sub «say-hello»(\$«name»?) \{
+    with \$«name» \{ say "Hello " ~ \$«name» \}
+    else        \!\{ say "Hello Human" \}
+  \}
+  sub «say-hello»(\$name = 'Human') \{ ... \}
+\end{code}
+\end{block}
+\begin{block}[Anonymous / Lambda Functions]
+\begin{code}
+  $«s»=  -> $a, $b \{ $a + $b \}; \comment{# pointy sub}
+  $«s»= <-> $a, $b \{ ... \};     \comment{# mark \$a, \$b "is rw"}
+  $«s»= \{ $^a + $^b \};          \comment{# implicit parameters}
+  $«s»= * + *;                  \comment{# whatever code}
+  say $«s»(3, 4);
+\end{code}
+%$% Stupid emacs
+\end{block}
+\begin{block}[multiple dispatch, "proto" declaration, memoization]
+\begin{code}
   \comment{# Need "proto" declaration to cache a multi sub}
   \comment{# Coerce to Int to reduce cache space}
-  proto fib(Int() $) is cached \{ * \}
-  multi sub fib(0) \{ 1 \}
-  multi sub fib(1) \{ 1 \}
-  multi sub fib($a) \{ fib($a-1) + fib($a-2) \}
+  proto «fib»(Int() \$) is cached \{ * \}
+  multi «fib»(0) \{ 1 \}  multi «fib»(1) \{ 1 \}
+  multi «fib»(\$«a» where \{ \$«a» ~~ 0|1 \}) \{ 1 \}\comment{# slow alt}
+  multi «fib»(\$«a») \{ «fib»(\$«a»-1) + «fib»(\$«a»-2) \}
+\end{code}
+\end{block}
+\begin{block}[traits]
+\lr{is cached}{memoization, even on array contents}
+\lr{is pure}{no random or side-effect; for optimizations}
+\lr{is rw}{lvalue subs, use "return-rw" to return var}
+\lr{is export, is export(:<foo>)}{exportable from a module. Special tags ":ALL", ":DEFAULT", ":MANDATORY"}
+\lr{is DEPRECATED(\$<msg>)}{friendly deprecation warnings}
+\lr{is hidden-from-backtrace}
+\end{block}
+\begin{block}[Routine Methods]
+\lr{\&<foo>.arity, \&<foo>.count}{min/max positional args}
+\lr{\&<foo>.Str, \&<foo>.signature}{name and signature}
+\lr{\&<foo>.file, \&<foo>.line}{where declared}
+\lr{\&<foo>.assuming(\dots)}{currying}
+\lr{\&<foo>.multi, \&<foo>.yada}{is multi, is stub (has ``\dots'' body)}
+\begin{code}
+  state $x = $_[0] // 1;
+  callsame, callwith, nextsame and nextwith
 \end{code}
 \end{block}
 
@@ -302,7 +391,7 @@ Associativity: (L)eft, (R)ight, (N)on, (C)hained, (X) list
   X & Junctive and     & \Code{\&}\\
   X & Junctive or      & \Code{| \^}\\
   L & Named unary      & \Code{temp let}\\
-  N & Structural infix & \Code{but does {\<}={\>} leg cmp .. ..{\^} {\^}..}\\
+  N & Structural infix & \Code{but does {\<}={\>} leq cmp .. ..{\^} {\^}..}\\
   C & Chaining infix   & \Code{!= == {\<} {\<}= {\>} {\>}= eq ne lt le gt ge {\~}{\~} === eqv !eqv}\\
   X & Tight and        & \Code{\&\&}\\
   X & Tight or         & \Code{|| {\^}{\^} // min max}\\
@@ -321,37 +410,32 @@ Associativity: (L)eft, (R)ight, (N)on, (C)hained, (X) list
 
 \section{Types}
 \begin{block}
+\lr{Mu, Any, Cool}{root type, base class, dual string/num}
 \lr{Bool, Bit}
 \lr{Int, Rat, FatRat, UInt, Num, Complex}
 \lr{Str, Blob, Buf}
 \lr{Char, Byte, Codepoint, Grapheme}
 \lr{int32, complex64, buf8, buf32, \dots}{Native types}
-utf8 IO Mu Any Cool Junction
-Supply Whatever Match Nil Parcel Capture Signature Pair Range Set Bag Mix
-SetHash BagHash MixHash Scalar Array Hash Code Enum Order TrigBase Block
-Routine Sub Method Regex Cursor Failure Exception Instant Duration Date
-DateTime
-\end{block}
-
-\section{Files}
-\begin{block}
-\lr{my \$fh = open(\"<path/to/file>\", <:r>)}{Open file}
-\lr{:r, :w, :rw, :a}{read, write, read-write, append}
-\lr{:bin, :chomp, :nl\<<\bs r\bs n>\>, :enc\<<UTF-8>\>}{other opts}
-\subtitle{\texttt{.IO} is your friend}
-\lr{\"<myfile>\".IO.lines(:enc\<UTF-8\>)}{lines (chomped!)}
-\lr{\"<myfile>\".IO.slurp(:enc\<UTF-8\>)}{slurp!}
-\lr{\"<myfile>\".IO.open(:enc\<UTF-8\>).print(<stuff>)}{spew!}
-\lr{\"<myfile>\".IO.e}{Exists (also ".d .f .l .r .w .x .s .z")}
-\lr{dir(\"</etc>\")}{list of IO objects, skips "." and ".."}
-\lr{dir(\"</etc>\",test={\>} *.IO.d)}{list dirs only (includes ".", "..")}
-See also: IO::Path
+% utf8 IO Junction
+% Supplier Supply Whatever Match Nil Parcel Capture Signature Pair Range Set Bag Mix
+% SetHash BagHash MixHash Scalar Array Hash Code Enum Order TrigBase Block
+% Routine Sub Method Regex Cursor Failure Exception Instant Duration Date
+% DateTime
 \end{block}
 
 \section{Processes}
 \begin{block}
 \lr{shell(\$<cmd>), run(*@<args>)}{command with/out shell return Proc::Status objects}
 \lr{qx[ <cmd> ], qqx[ <cmd> ]}{execute and canpture STDOUT}
+\end{block}
+
+\section{Pod}
+\begin{block}
+\begin{code}
+  =begin comment
+  Multi line comments...
+  =end comment
+\end{code}
 \end{block}
 
 \section{Testing}
@@ -384,7 +468,10 @@ See also: IO::Path
 \section{Objects}
 \begin{block}
 \begin{code}
-  class Foo \{
+  role «MyRole» \{ ... \}
+  class «MyParent» \{ ... \}
+
+  class «Foo» is «MyParent» does «MyRole» \{
     my \$static      = True; \comment{# private static}
     my \$.pub-static = 42;   \comment{# public static}
 
@@ -397,6 +484,9 @@ See also: IO::Path
       self.«whatever»;   \comment{# Methods on \texttt{self}}
       @!w.push: \$val;  \comment{# Note! \texttt{@!w}}
     \}
+
+    \comment{# private method, call with self!my-private}
+    method !«my-private»(...) \{ ... \}
 
     \comment{# We get a key/value .new() for free.}
     \comment{# Override for positional (not best practices!)}
@@ -418,6 +508,11 @@ See also: IO::Path
   \}
 \end{code}
 \end{block}
+\begin{block}[Introspection]
+\lr{\$o.WHAT, \$o {\~\~} Foo, \$o {\~\~} MyRole}{obj class, type tests}
+\lr{\$o.\^attributes, \$o.\^methods, \$o.\^parents}
+\end{block}
+
 
 \section{Grammars}
 \begin{block}
