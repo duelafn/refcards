@@ -221,19 +221,17 @@
 \end{block}
 \begin{block}[Exceptions]
 \begin{code}
-  try \{\comment{# try is optional, can CATCH in any block}
+  try \{\comment{# \"try\" optional, can CATCH in any block}
    ...
    \comment{# CATCH may appear anywhere within block}
-   \comment{# is in same scope so vars are accessible}
+   \comment{# is in same scope so can use block vars}
    CATCH \{
      when X::AdHoc \{ \comment{\#`(Type thrown for die «msg»)} \}
      when X::IO \{ ... \}
      default \{ ... \}
    \}
-   LEAVE \{
-     \comment{# a general phaser, but worth special mention}
-     \comment{# Like “finally” in other languages}
-   \}
+   \comment{# LEAVE is a general phaser, not CATCH specific}
+   LEAVE \{ \comment{\#`(called when leave by any means)} \}
    ...
    die \"Oops\";\comment{# X::AdHoc.new(:payload<Oops>).throw}
    ...
