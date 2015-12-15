@@ -68,6 +68,8 @@
 \hfill\IfBooleanTF{#1}{\mbox{}\\\mbox{}\hfill}{} #3\mbox{}
 \end{flushright}}
 
+\def\sup#1{\ensuremath{^{\text{\small\textrm{#1}}}}}
+
 \def\"{\char`"}
 \def\^{\char`^}
 \def\<{\char`<}
@@ -166,6 +168,27 @@
 \lr{:<foo>['<some>', '<vals>']}{"<foo> {=\>} ['<some>', '<vals>']"}
 \lr{:<foo>\{<key> {=\>} '<val>'\}}{"<foo> {=\>} \{<key> {=\>} '<val>'\}"}
 \lr{:\$<foo>}{"<foo> {=\>} \$<foo>"}
+\end{block}
+
+\begin{block}[Lists and Iteration (Synopsis 7)]
+\lr{Seq; List; Array}{read once; immutable; mutable}
+\lr{\$*IN.lines; (1, 2, 3); [1, 2, 3]}{"Seq", "List", "Array"}
+\lr{for @a \{\}; for |@a, |@b \{\}}{descend into arrays}
+\lr{for \$@a \{\}; for @a, @b \{\}}{loop over arrays themselves}
+\lr{@a.push: 1,2; @a.push: [1,2]; @a.push: @b}{descend}
+\lr{@a.push: \$[1,2]; @a.push: \$@b}{push Array}
+\lr{push, pop, shift, unshift, splice}{Array methods}
+\lr{@a[5] = 42; @a.elems}{autovivification, num elements}
+\lr{for 1, 2 Z 'a', 'b' {-\>} \$x \{ say \"\$x[0]: \$x[1]\"{} \}}
+\lr{for 1, 2 Z 'a', 'b' {-\>} *(\$x,\$y) \{ say \"\$x: \$y\"{} \}}
+\lr{for flat 1, 2 Z 'a', 'b' {-\>} \$x,\$y \{ say \"\$x: \$y\"{} \}}
+\end{block}
+
+\begin{block}[Sequences]
+\lr{\$seq = (1, 2, 3).map(* + 1)}{lazy, read-once}
+\lr{@a = (1, 2, 3).map(* + 1)}{eager, read many}
+\lr{.say for |\$seq; .say for |\$seq}{error 2\sup{nd} time}
+\lr{.say for \$seq.cache; .say for \$seq.cache}{ok}
 \end{block}
 
 \begin{block}[Quoting]
