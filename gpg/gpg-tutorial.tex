@@ -5,7 +5,7 @@
 \usepackage{multicol,xcolor,shortvrb,fancyvrb}
 \usepackage[user,titleref]{zref}
 \usepackage{xspace}
-\usepackage[breaklinks]{hyperref}
+\usepackage[breaklinks,colorlinks]{hyperref}
 \hypersetup{
   pdftitle={OpenPGP + GnuPG Tutorial and Reference Guide},
 %   pdfsubject={Further (short) Description of Document},
@@ -166,9 +166,10 @@ technical validity of the key data (well-formed, not revoked, not expired,
 \dots). In the web of trust sense we require that a valid key be bound to
 its User ID (name+email) with an acceptable trust path.
 
-Of course, your own keys are considered valid. Additionally, any keys you
-sign will be considered valid. Beyond that, validity can be propegated
-further based on the trust you place on keys in your keyring.
+Of course, your own keys are considered valid unless they have been
+revoked. Additionally, any keys you sign will be considered valid. Beyond
+that, validity can be propegated further based on the trust you place on
+keys in your keyring.
 
 \begin{description}\tightitems
 \item[Unknown] (default) You don't know how much to trust this user to
@@ -194,7 +195,7 @@ sense to leave a key that you have signed as ``Unknown'' (if you sign a key
 at a keysigning party, but do not know the person personally).
 Additionally, you may choose to alter the trust of keys you have not signed
 (for instance, you may choose marginally trust but not sign
-\texttt{pub 1024D/449FA3AB 1999-10-05 Linus Torvalds $<$torvalds@transmeta.com$>$})
+\texttt{pub  2048R/00411886 2011-09-20 Linus Torvalds $<$torvalds@transmeta.com$>$})
 
 
 When you sign a key, you may specify a \textsl{certification level}. This
@@ -387,7 +388,7 @@ email signed keys to their owners.
   gpg --home=/media/thumb/gnupg --list-keys --fingerprint \sl{their\_id}
   \# Verify the full fingerprint of their key before proceeding!
 
-  gpg --home=/media/thumb/gnupg --sign-key \sl{their\_id}a
+  gpg --home=/media/thumb/gnupg --sign-key \sl{their\_id}
   gpg --home=/media/thumb/gnupg --list-sigs \sl{their\_id}
   \# Verify your signature appears on the list of signatures
 
@@ -418,6 +419,7 @@ signature and then re-upload your key to a public keyserver.
 \section{Using Keys}
 \begin{tabbing}
 List all public keys I have: \= \texttt{gpg --list-keys}\\
+                             \> \texttt{gpg --list-keys --keyid-format long --fingerprint}\\
 Search public keys I have:   \> \texttt{gpg --list-keys \sl{search\_term}}
 \end{tabbing}
 
@@ -439,6 +441,25 @@ Verify the fingerprint of the received key:
 \begin{code}
   gpg --fingerprint user@some-email.com
 \end{code}
+
+\subsection{Modifying Trust}
+\begin{code}
+  gpg --edit-key \sl{key\_id}
+  pub  \dots
+  gpg> trust
+  Please decide how far you trust this user to correctly verify other users' keys
+  (by looking at passports, checking fingerprints from different sources, etc.)
+
+    1 = I don't know or won't say
+    2 = I do NOT trust
+    3 = I trust marginally
+    4 = I trust fully
+    5 = I trust ultimately
+    m = back to the main menu
+
+  Your decision?
+\end{code}
+
 
 \subsection{Verifying Signatures}
 \begin{code}
