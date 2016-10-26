@@ -95,8 +95,9 @@ by) a master key pair. By default, GnuPG creates a signing-only key pair as
 a master key, and an encryption-only subkey.
 
 \begin{description}
-\item[Master key] Identified on ``pub'' line by |gpg --list-keys|. You need
-  to save this secret to secure offline media only. Used ONLY to:\\[-4ex]
+\item[Master key] Identified on ``sec'' line by |gpg -K|, or ``pub'' line
+  by |gpg --list-keys|. You need to save this secret to secure offline
+  media only. It is used ONLY to:
   \begin{itemize}\tightitems
   \item sign someone else's key
   \item create or revoke subkeys
@@ -119,8 +120,9 @@ Each master key has a fingerprint which uniquely identifies the key.
 Collisions on this fingerprint represent a breakdown of the OpenPGP system.
 You will also see shorter 8 or 16 character ids (taken from the end of the
 fingerprint). These are displayed when listing keys and are convenient when
-using the gpg command line. However, conflicts may arise in these shorter
-ids so they should be avoided when scripting or verifying keys.
+using the gpg command line. However, collisions have ben seen in the wild
+in these shorter ids so they should not be used when scripting or verifying
+keys.
 
 The gpg default is to show 8-character IDs, you can get 16 character IDs
 using: |gpg --list-keys --keyid-format long| and the full fingerprint using
@@ -185,7 +187,7 @@ keys in your keyring.
 
 \item[Full] You trust this user's ability to verify the validity of other
   people's keys so much, that, provided this key is valid, you'll consider
-  valid any key signed by him/her.
+  valid any key signed by it.
 
 \item[Ultimate] Used only for your own keys.
 \end{description}
@@ -194,7 +196,7 @@ These trust levels are completely independent from signing. It can make
 sense to leave a key that you have signed as ``Unknown'' (if you sign a key
 at a keysigning party, but do not know the person personally).
 Additionally, you may choose to alter the trust of keys you have not signed
-(for instance, you may choose marginally trust but not sign
+(for instance, you may choose to marginally trust but not sign
 \texttt{pub  2048R/00411886 2011-09-20 Linus Torvalds $<$torvalds@transmeta.com$>$})
 
 
@@ -463,13 +465,14 @@ Verify the fingerprint of the received key:
 
 \subsection{Verifying Signatures}
 \begin{code}
-  gpg --verify signedfile
+  gpg --verify signedfile.gpg
   gpg --verify signedfile.sig signedfile
+  gpg -o signedfile --decrypt signedfile.gpg
 \end{code}
 
 \subsection{Signing Documents}
 
-Sign a message: \texttt{gpg --clearsign \sl{filename}}\\
+Sign a message: \texttt{gpg -o \sl{filename.gpg} --sign \sl{filename}}\\
 Sign a message in separarte file: \texttt{gpg --detach-sign --armor \sl{filename}}
 
 
@@ -482,8 +485,9 @@ Encrypt using a public key (and sign it):
 Encrypt using a passphrase: \texttt{gpg --symmetric \sl{filename}}
 
 \subsection{Decrypting}
-Decrypt a file: \texttt{gpg --decrypt filename}\\
-Decrypt STDIN:  \texttt{gpg --decrypt}
+Decrypt a file: \texttt{gpg -o decrypted --decrypt filename}\\
+Decrypt a file: \texttt{gpg --decrypt filename >decrypted}\\
+Decrypt STDIN:  \texttt{gpg --decrypt >decrypted}
 
 
 \section{Suggested gpg.conf}
@@ -507,6 +511,8 @@ Decrypt STDIN:  \texttt{gpg --decrypt}
   keyserver \keyserver
 
   list-options show-uid-validity
+  with-fingerprint
+  keyid-format long
 
   personal-digest-preferences SHA512
   cert-digest-algo SHA512
