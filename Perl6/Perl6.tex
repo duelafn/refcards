@@ -93,6 +93,7 @@
 \def\subsection#1{\par\vspace{2ex}\textbf{» #1}\par}
 \def\br{\vspace{1.75ex}}
 
+\newfontfamily\unicode{DejaVu Sans}% Font with enough unicode symbols
 \setmainfont[Mapping=tex-text]{Linux Libertine O}
 \setmonofont[Scale=MatchLowercase]{Inconsolata}% fonts-inconsolata. Note: "Mapping=tex-text" makes -- become endash (bad for code)
 % \setmonofont[Scale=MatchLowercase]{DejaVu Sans Mono}% Note: "Mapping=tex-text" makes -- become endash (bad for code)
@@ -204,6 +205,7 @@
 \lr{Q:x[ ], qx[ <ps auxx> ]}{shell command}
 \lr{Q:qq:x[ ], qqx[ <ps | grep '>\$<prog'> ]}{interp.~shell cmd}
 \lr{Q:to/<END>/ <...> <END>}{heredoc (may indent)}
+\lr{\bs c[<CHAR NAME>]}{Example: \bs c[SNOWMAN] $\to$ {\unicode ☃}}
 \end{block}
 
 \section{Flow Control}
@@ -472,17 +474,27 @@ Associativity: (L)eft, (R)ight, (N)on, (C)hained, (X) list
 \lr{qx[ <cmd> ], qqx[ <cmd> ]}{execute and canpture STDOUT}
 \subtitle{Proc}
 \begin{code}
-  \$proc = run 'echo', 'Hallo world', :out;
-  my \$output = \$proc.out.slurp-rest;
   sub run( :\$in = '-', :\$out = '-', :\$err = '-',
     :\$chomp = True, :\$bin = False, :\$merge = False,
     Str:D :\$enc = 'UTF-8', Str:D \$nl = "{\bs}n",
     :\$cwd = \$*CWD, Hash() :\$env = \%*ENV,
     *@args
   ) returns Proc:D
+\end{code}
+\begin{code}
+  \$proc = run 'echo', 'Hallo world', :out;
+  my \$output = \$proc.out.slurp-rest;
   my \$p1 = run 'echo', 'Hello, world', :out;
   my \$p2 = run 'cat', '-n', :in(\$p1.out), :out;
   say \$p2.out.get;
+\end{code}
+\subtitle{Proc::Async}
+\begin{code}
+  my \$proc = Proc::Async.new('echo', 'Hello World');
+  \$proc.stdout.tap(-> \$v { print "Output: \$v" });
+  \$proc.stderr.tap(-> \$v { print "Error:  \$v" });
+  my \$promise = \$proc.start;
+  await \$promise; # Optionally wait for completion
 \end{code}
 \end{block}
 
@@ -675,6 +687,19 @@ For precedence / calculator:
 
 % \section{Rakudo Star Classes}
 % \section{Non-Core Classes}
+
+\section{Various Examples}
+
+\begin{block}[Method cascade]
+\begin{code}
+  \comment{\# in block \$\_ is \$obj so methods called on \$obj}
+  my \$obj = My::Class.new(title {=\>} "abc") andthen \{
+    .foo();
+    .bar();
+    .baz();
+  \}
+\end{code}
+\end{block}
 
 
 \end{multicols*}
