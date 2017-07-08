@@ -605,8 +605,8 @@ Associativity: (L)eft, (R)ight, (N)on, (C)hained, (X) list
 \begin{block}[Proc::Async]
 \begin{code}
   my \$proc := Proc::Async.new('echo', 'Hello World');
-  \$proc.stdout.tap(-> \$v { print "Output: \$v" });
-  \$proc.stderr.tap(-> \$v { print "Error:  \$v" });
+  \$proc.stdout.tap(-> \$v \{ print "Output: \$v" \});
+  \$proc.stderr.tap(-> \$v \{ print "Error:  \$v" \});
   my \$promise := \$proc.start;
   await \$promise; # Optionally wait for completion
 \end{code}
