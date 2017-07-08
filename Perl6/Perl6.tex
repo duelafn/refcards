@@ -730,6 +730,7 @@ Value types may be Numerical or Str with Int as default.
 \end{block}
 \begin{block}
 \begin{code}
+  \# use Grammar::Tracer; \# Uncomment to debug!
   grammar MyGrammar \{
     token TOP \{ ^ <action> [ {\bs}n+ <action> ]* {\bs}s* \$ \}
     token ws \{ {\bs}h* \}
