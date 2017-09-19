@@ -245,6 +245,27 @@
 \lr{\bs c[<CHAR NAME>]}{Example: \bs c[SNOWMAN] $\to$ {\unicode ☃}}
 \end{block}
 
+\begin{block}[Globals]
+\lr{@*ARGS}
+\lr{\$\_, \$/, \$!}{topic, match, error variables}
+\lr{\$*ARGFILES}
+\lr{\$*PROGRAM, \$*EXECUTABLE}
+\lr{\$*PROGRAM-NAME \$*EXECUTABLE-NAME}
+\lr{\$*IN, \$*OUT, \$*ERR}{standard file handles}
+\lr{\$*CWD}{Current working directory}
+\lr{\$*PID}
+\lr{\$*GROUP \$*USER \$*HOME \$*TMPDIR \%*ENV}
+\lr{\$*TOLERANCE}{Used by "=~="}
+\lr{\$*THREAD \$*SCHEDULER}
+\lr{\$*INITTIME, \$*TZ}{"Instant" of script start, TZ offset (seconds)}
+\lr{\$*PERL \$*VM \$*REPO \$*KERNEL \$*DISTRO}{misc objects}
+\lr{\$?FILE, \$?LINE, \$?PACKAGE, \$?MODULE}
+\lr{\$?CLASS, \$?ROLE, \$?GRAMMAR}
+\lr{\$?ENC, \$?USAGE, \$?TABSTOP}
+\lr{\&?ROUTINE, \&?BLOCK}{current routine (recursion!), block}
+\lr{::?CLASS, \%?LANG, \%?RESOURCES}{}
+\end{block}
+
 \section{Flow Control}
 \begin{block}
 \lr{if <EXPR> \{ \} elsif <EXPR> \{ \} else \{ \}}{boolean test}
