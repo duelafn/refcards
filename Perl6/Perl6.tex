@@ -408,6 +408,7 @@ See also: IO::Path
 \lr{\&<foo>.file, \&<foo>.line}{where declared}
 \lr{\&<foo>.assuming(\dots)}{currying}
 \lr{\&<foo>.multi, \&<foo>.yada}{is multi, is stub (has ``\dots'' body)}
+% https://perl6advent.wordpress.com/2010/12/14/day-14-nextsame-and-its-cousins/
 \begin{code}
   state $x = $_[0] // 1;
   callsame, callwith, nextsame and nextwith
@@ -673,6 +674,7 @@ Execute using "prove --exec perl6 myfile.t"
 \end{block}
 
 \section{Objects}
+% https://perl6advent.wordpress.com/2010/12/14/day-14-nextsame-and-its-cousins/
 \begin{block}
 \begin{code}
   role «MyRole» \{ ... \}
@@ -708,8 +710,8 @@ Execute using "prove --exec perl6 myfile.t"
 
     \comment{# Run code at build time}
     method BUILDALL (|c) \{
-      nextsame;
-      \comment{# other code, self already populated...}
+      callsame;\comment{# super method, also callwith(...)}
+      \comment{# nextsame, nextwith call and never return}
     \}
 
     \comment{# Manipulate your attrs at init}
