@@ -335,7 +335,8 @@
 \lr{slurp \$file; spurt \$file, \$content}{easy read/write}
 \end{block}
 \begin{block}[Files]
-\lr{my \$fh := open(\"<path/to/file>\", <:r>)}{Open file}
+Unlike Perl 5, files must be closed (GC not Refcount)
+\lr{my \$fh := open(\"<path/to/file>\", <:w>) will leave \{.close\}}
 \lr{:r, :w, :rw, :a}{read, write, read-write, append}
 \lr{:bin, :chomp, :nl\<<\bs r\bs n>\>, :enc\<<UTF-8>\>}{other opts}
 \subtitle{\texttt{.IO} is your friend}
