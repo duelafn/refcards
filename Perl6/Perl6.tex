@@ -569,6 +569,16 @@ Associativity: (L)eft, (R)ight, (N)on, (C)hained, (X) list
 \lr{subset <Pos> of Numeric where * {\>} 0}{custom}
 \end{block}
 
+\section{``Magic'' Methods}
+\begin{block}
+\lr{.Numeric}{num coersion: unary "+" or "-"}
+\lr{.Bool}{bool coersion: unary "?" or "!" and conditionals}
+\lr{.Str}{machine-readable repr: "put()", "\~"}
+\lr{.succ, .pred}{non-mutating! implements: "++", "--"}
+\lr{.gist}{human-readable repr: "say()"}
+\lr{.perl}{EVAL-able repr}
+\end{block}
+
 \section{Str}
 \begin{block}
 \lr{.chars, .codes}{num chars (graphemes), code points}
