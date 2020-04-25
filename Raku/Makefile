@@ -1,5 +1,5 @@
 
-PDFS = Perl6.pdf
+PDFS = Raku.pdf
 
 
 all: $(PDFS)
