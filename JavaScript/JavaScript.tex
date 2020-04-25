@@ -82,9 +82,15 @@
     \ifprototype + prototype.js 1.6 \fi
     \ifjquery    + jQuery 1.8 (\jQueryOnly) \fi
   } Reference Guide\\
-  All funcs/methods work in FF 1.0+ and IE 6.0+\\
-  Version 0.21, Jul 2013 --- Dean Serenevy
+  All funcs/methods work in FF 52+, IE 10+ (Windows 8), Chrome\\
+  Version 0.4, May 2018 --- Dean Serenevy
 \end{center}
+
+% https://en.wikipedia.org/wiki/Google_Chrome_version_history
+% https://en.wikipedia.org/wiki/Edge_browser
+% https://en.wikipedia.org/wiki/Firefox_version_history
+% https://en.wikipedia.org/wiki/Safari_version_history
+% https://en.wikipedia.org/wiki/Internet_Explorer_version_history
 
 \section{JavaScript Syntax}
 % |<script src="../|\sl{foo.js}|"></script>|\\
@@ -144,6 +150,7 @@
 \lr{.substr(<beg>,\opt{<length>})}{0-based; negatives not ok}
 \lr{.substring(<beg>,\opt{<end>})}{0-based; negatives not ok}
 \lr{.toLowerCase(), .toUpperCase()}{}
+\lr{.trim(), .trimStart(), .trimEnd()}{returned}
 
 % \subsection{HTML wrapping}
 % |x="foo"; y=x.bold()|\hfill y=``$<$b$>$foo$<$/b$>$''\\
@@ -497,6 +504,7 @@ Grey events have more than usual incompatibilities\\[-.5ex]
 \br
 
 \lr{load, error, abort}{event in page or image load}
+\lr{}{Note: use end of doc "<script>" instead of \texttt{load}}
 \lr{focus, blur}{element gains/loses focus}
 \lr{\opt{keydown}, \opt{keypress}, keyup}{keyboard key event}
 \lr{input}{content of a field changes (HTML5)}
@@ -505,13 +513,20 @@ Grey events have more than usual incompatibilities\\[-.5ex]
 \lr{click, dblclick}{clicks -- also fires mouse-down/up!}
 \lr{mouseenter, mouseleave}{over/not over element}
 \lr{}{IE only, but emulated in major libraries}
-\lr{mouseover, mouseout}{same, but re-fire ``out''}
+\lr{mouseover, mouseout}{\textsl{hover}, re-fires ``out''}
 \lr{}{then ``over'' for child elements (bubble)}
 \lr{mousemove}{mouse is moved}
 \lr{reset, submit}{form button events}
 \lr{resize}{window or frame is resized}
 \lr{select}{selection made in text input field}
 \lr{unload}{user exits the page}
+
+\subsection{Core Promise\small, Oct 2014 (C,F,E,S$-$IE)}
+\begin{code}
+  new Promise(function (resolve, reject) \{
+     \dots resolve() \dots{OR}\dots reject() \dots{OR}\dots throw \dots
+  \}).catch(funcname).then(onsuccess, onfailure);
+\end{code}
 
 \ifjquery
 \subsection[\jQueryOnly]{jQuery "Event"}
@@ -555,7 +570,11 @@ Grey events have more than usual incompatibilities\\[-.5ex]
 Attributes avail.~as props:~(others in line w/element)\\
 \lr{.tagName}{}
 \lr{.id, .title, .name, .accessKey, .tabIndex, .alt}{}
-\lr{.innerHTML}{for container objects}
+\lr{.style}{e.g.: \texttt{x.style.display\,=\,\"none\"}}{}
+\lr{.innerHTML, .textContent}{for container objects}
+\lr{.getAttribute(<name>), .setAttribute(<name>, <val>)}{}
+\lr{.hasAttribute(\dots), .removeAttribute(\dots)}{}
+\lr{.classList.add(<cls>); .remove(<cls>); .toggle(<cls>)}{}
 
 \subsection{"a"\hfill {\tt\small .href}}
 
@@ -601,6 +620,24 @@ Attributes avail.~as props:~(others in line w/element)\\
 \lr{.defaultValue}{}
 \lr{.select()}{select (hilight) text in entry}
 
+\section{DOM Manipulation}
+Do save space, \textsl{doc} $\leftrightarrow$ \texttt{document}\\
+\lr{<doc>.createElement(<tag-name>)}{}
+\lr{.querySelector(<selectors>)}{meth of <doc> or Element}
+\lr{.querySelectorAll(<selectors>)}{NodeList}
+\br
+
+\lr{<ele>.insertAdjacentHTML(<where>, <HTML>)}{<where> =  }
+\lr{.insertAdjacentElement(\dots)}{beforeend\,|\,afterend}
+\lr{.insertAdjacentText(\dots)}{|\,beforebegin\,|\,afterbegin}
+\br
+
+\lr{.parentElement, .children}{}
+\lr{.firstElementChild, .lastElementChild}{skip text}
+\lr{.firstChild, .nextSibling}{beware text nodes}
+
+\subsection{NodeList}
+\lr{nl.length, nl[<i>], nl.forEach()}{like Array}
 
 \ifjquery
 \section[\jQueryOnly]{jQuery Elements}
@@ -893,6 +930,10 @@ Returning "false" from callback stops both
 \lr*{sortTable(<id>,<colNo>,\opt{<order>=1},\opt{<nrHeaders>=0})}
     {$\text{\textsl{order}}\in\{1,-1\}$, leave top \textsl{nrHeaders} in place}
 \fi
+
+
+\section{Core AJAX}
+\lr{JSON.parse(<str>), JSON.stringify(<obj>)}{}
 
 
 \ifjquery
